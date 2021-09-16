@@ -71,6 +71,8 @@
   ],
   "jest": {
     "preset": "@vue/cli-plugin-unit-jest/presets/typescript-and-babel",
+    "rootDir": "src",
+    "testMatch": ["**/?(*.)spec.ts"],
     "transform": {
       "^.+\\.vue$": "vue-jest"
     }
