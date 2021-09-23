@@ -9,6 +9,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "ant-design-vue": "2.2.8",
     "core-js": "^3.6.5",
     "v-network-graph": "0.1.9",
     "vue": "^3.0.0",
@@ -72,7 +73,9 @@
   "jest": {
     "preset": "@vue/cli-plugin-unit-jest/presets/typescript-and-babel",
     "rootDir": "src",
-    "testMatch": ["**/?(*.)spec.ts"],
+    "testMatch": [
+      "**/?(*.)spec.ts"
+    ],
     "transform": {
       "^.+\\.vue$": "vue-jest"
     }

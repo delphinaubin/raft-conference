@@ -23,10 +23,8 @@
       #override-node-label="{
         nodeId,
         scale,
-        text,
         x,
         y,
-        config,
         textAnchor,
         dominantBaseline,
       }"
@@ -43,12 +41,23 @@
       <text
         :x="x"
         :y="y"
-        :font-size="config.fontSize * scale"
+        :font-size="configs.node.label.fontSize * scale"
         :text-anchor="textAnchor"
         :dominant-baseline="dominantBaseline"
-        :fill="config.color"
-        >{{ text }}</text
+        :fill="configs.node.label.color(graphNodes[nodeId])"
+        >{{ graphNodes[nodeId].name }}</text
       >
+    </template>
+
+    <template #override-node="{ nodeId, scale, config, ...slotProps }">
+      <circle
+        class="animated-circle"
+        :r="config.radius * scale"
+        :fill="configs.node.normal.color(graphNodes[nodeId])"
+        :stroke="configs.node.normal.strokeColor(graphNodes[nodeId])"
+        :stroke-width="configs.node.normal.strokeWidth(graphNodes[nodeId])"
+        v-bind="slotProps"
+      />
     </template>
   </v-network-graph>
 </template>
@@ -176,6 +185,13 @@ export default class NodeVisualizer extends Vue {
       },
       edge: {
         selectable: true,
+        marker: {
+          target: {
+            type: "arrow",
+            width: 4,
+            height: 4
+          },
+        },
         normal: {
           color: (edge: Edge): string =>
             edge.status === "connected" ? "lightgreen" : "orangered",
@@ -248,3 +264,10 @@ export default class NodeVisualizer extends Vue {
   }
 }
 </script>
+
+<style scoped="true">
+.animated-circle {
+  transition: fill 0.1s linear, stroke 0.1s linear, stroke-width 0.1s linear,
+    r 0.1s linear;
+}
+</style>
