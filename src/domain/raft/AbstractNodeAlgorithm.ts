@@ -36,4 +36,8 @@ export abstract class AbstractNodeAlgorithm {
     await this.state.onEnterInState();
     this.eventHandler.afterStateChange(oldState, newState);
   }
+
+  async onReceiveNetworkRequest(payload: unknown): Promise<void> {
+    console.log("Receiving network request", payload);
+  }
 }
