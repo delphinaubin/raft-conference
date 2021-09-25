@@ -264,4 +264,59 @@ describe("raft system", function () {
     expectLogMatches(node101, node102);
     expectLogMatches(node101, node103);
   });
+
+  it("nodes vote for first request", () => {
+    const eventBus = new ProdEventBus(true);
+    const storage = new RaftStorage();
+    const timers = new Timers(eventBus);
+
+    const node101 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      101,
+      [101, 102, 103],
+      false
+    );
+    const node102 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      102,
+      [101, 102, 103],
+      false
+    );
+    const node103 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      103,
+      [101, 102, 103],
+      false
+    );
+
+    timeoutLeaderFailure(101, timers);
+    timeoutLeaderFailure(102, timers);
+
+    eventBus.deliverEventToSub("node-102-timer-leaderFailure");
+    eventBus.deliverEventToSub("node-101-timer-leaderFailure");
+    eventBus.deliverEventToSub("node-103-vote-requests");
+    eventBus.deliverEventToSub("node-103-vote-requests");
+    eventBus.deliverEventToSub("vote-response-101");
+    eventBus.deliverEventToSub("vote-response-102");
+    eventBus.deliverEventToSub("node-101-vote-requests");
+    eventBus.deliverEventToSub("node-102-vote-requests");
+
+    timeoutLeaderLogReplicate(102, timers);
+    eventBus.deliverEventToSub("node-102-timer-leaderReplicateLog");
+    eventBus.deliverEventToSub("replicate-log-101");
+    eventBus.deliverEventToSub("log-response-102");
+    eventBus.deliverEventToSub("log-response-102");
+
+    expect(node101.node.currentRole).toBe(NodeRole.Follower);
+    expect(node102.node.currentRole).toBe(NodeRole.Leader);
+    expect(node103.node.currentRole).toBe(NodeRole.Follower);
+
+    console.log(eventBus.callbackQueue);
+  });
 });

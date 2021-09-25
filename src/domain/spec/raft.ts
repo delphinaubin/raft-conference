@@ -93,8 +93,18 @@ class Subscription {
   ) {}
 }
 
+class Step {
+  constructor(readonly subscription: Subscription, readonly event: Event) {}
+}
+
 export class ProdEventBus implements EventBus {
+  private stepByStep: boolean;
+  callbackQueue: Step[] = [];
   subscriptions: Subscription[] = [];
+
+  constructor(stepByStep?: boolean) {
+    this.stepByStep = stepByStep != undefined && stepByStep;
+  }
 
   subscribe(
     subId: string,
@@ -115,9 +125,39 @@ export class ProdEventBus implements EventBus {
     console.log(`Publishing event to ${channel}. Event:`, event);
     const subs = this.subscriptions.filter((sub) => sub.channel == channel);
     subs.forEach((sub) => {
-      console.log(`Triggering subscriber ${sub.subId} event callback`);
-      sub.callback(event);
+      if (this.stepByStep) {
+        console.log(
+          `Adding callback for subscription ${sub.subId} in step by step queue`
+        );
+        this.callbackQueue.push(new Step(sub, event));
+      } else {
+        console.log(`Triggering subscriber ${sub.subId} event callback`);
+        sub.callback(event);
+      }
     });
+  }
+
+  deliverEventToSub(subId: string): void {
+    if (this.stepByStep) {
+      //console.log(`Replaying first step for sub ${subId}`);
+      //console.log(this.callbackQueue);
+      const step = this.callbackQueue.filter(
+        (step) => step.subscription.subId == subId
+      )[0];
+      if (step != undefined) {
+        //console.log("Step found, running callback");
+        step.subscription.callback(step.event);
+        const stepIndex = this.callbackQueue.findIndex(
+          (step) => step.subscription.subId == subId
+        );
+        if (stepIndex > -1) {
+          //console.log("Step removed from callback queue");
+          this.callbackQueue.splice(stepIndex, 1);
+        }
+      } else {
+        //console.log("Step not found, running callback");
+      }
+    }
   }
 }
 
@@ -374,7 +414,10 @@ export class RaftNode {
         console.log(
           `Node ${this.node.id} does not vote for ${voteRequest.candidateId}`
         );
-        this.eventBus.publish(`vote-response-${this.node.id}`, response);
+        this.eventBus.publish(
+          `vote-response-${voteRequest.candidateId}`,
+          response
+        );
       }
     }
   }
