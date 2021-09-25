@@ -159,6 +159,10 @@ export class ProdEventBus implements EventBus {
       }
     }
   }
+
+  emptyCallbackQueue() : void {
+    this.callbackQueue = [];
+  }
 }
 
 export class Timer {
@@ -459,6 +463,7 @@ export class RaftNode {
 
   onElectionTimeoutOrLeaderFailed(): void {
     console.log(`Node ${this.node.id} entering candidate state`);
+    this.cancelLeaderFailureTimer();
     this.node.currentRole = NodeRole.Candidate;
     this.node.currentTerm += 1;
     this.node.votedFor = this.node.id;
@@ -475,6 +480,7 @@ export class RaftNode {
       lastTerm
     );
     this.eventBus.publish("vote-requests", voteRequest);
+    this.startElectionTimer();
   }
 
   private replicateLog(follower: NodeId) {
@@ -542,10 +548,14 @@ export class RaftNode {
       this.node.votedFor = null;
       this.node.currentRole = NodeRole.Follower;
       this.node.currentLeader = logRequest.leaderId;
+      this.cancelLeaderFailureTimer();
+      this.startLeaderFailureTimer();
     }
     if (logRequest.term == this.node.currentTerm) {
       this.node.currentRole = NodeRole.Follower;
       this.node.currentLeader = logRequest.leaderId;
+      this.cancelLeaderFailureTimer();
+      this.startLeaderFailureTimer();
     }
     const logOk =
       this.node.log.length >= logRequest.logLength &&
