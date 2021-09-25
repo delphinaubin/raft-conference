@@ -305,18 +305,21 @@ describe("raft system", function () {
     eventBus.deliverEventToSub("vote-response-101");
     eventBus.deliverEventToSub("vote-response-102");
     eventBus.deliverEventToSub("node-101-vote-requests");
+    eventBus.deliverEventToSub("node-101-vote-requests");
     eventBus.deliverEventToSub("node-102-vote-requests");
+    eventBus.deliverEventToSub("node-102-vote-requests");
+    eventBus.deliverEventToSub("vote-response-101");
+    eventBus.deliverEventToSub("vote-response-102");
 
     timeoutLeaderLogReplicate(102, timers);
     eventBus.deliverEventToSub("node-102-timer-leaderReplicateLog");
     eventBus.deliverEventToSub("replicate-log-101");
+    eventBus.deliverEventToSub("replicate-log-103");
     eventBus.deliverEventToSub("log-response-102");
     eventBus.deliverEventToSub("log-response-102");
 
     expect(node101.node.currentRole).toBe(NodeRole.Follower);
     expect(node102.node.currentRole).toBe(NodeRole.Leader);
     expect(node103.node.currentRole).toBe(NodeRole.Follower);
-
-    console.log(eventBus.callbackQueue);
   });
 });
