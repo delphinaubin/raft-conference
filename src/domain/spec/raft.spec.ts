@@ -102,6 +102,16 @@ describe("raft system", function () {
       .forEach((timer) => timers.timeout(timer));
   };
 
+  const expectLogMatches = (node: RaftNode, otherNode: RaftNode) => {
+    const nodeLog = node.node.log;
+    const otherNodeLog = otherNode.node.log;
+    expect(nodeLog.length).toBe(otherNodeLog.length);
+    for (let i = 0; i < nodeLog.length; i++) {
+      expect(nodeLog[i].value).toBe(otherNodeLog[i].value);
+      expect(nodeLog[i].term).toBe(otherNodeLog[i].term);
+    }
+  };
+
   it("a node becomes leader", () => {
     const eventBus = new ProdEventBus();
     const storage = new RaftStorage();
@@ -172,5 +182,86 @@ describe("raft system", function () {
 
     expect(node102.node.currentLeader).toBe(101);
     expect(node103.node.currentLeader).toBe(101);
+  });
+
+  it("nodes broadcast events to leader", () => {
+    const eventBus = new ProdEventBus();
+    const storage = new RaftStorage();
+    const timers = new Timers(eventBus);
+
+    const node101 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      101,
+      [101, 102, 103],
+      false
+    );
+    const node102 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      102,
+      [101, 102, 103],
+      false
+    );
+    const node103 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      103,
+      [101, 102, 103],
+      false
+    );
+
+    timeoutLeaderFailure(101, timers);
+    timeoutLeaderLogReplicate(101, timers);
+
+    eventBus.publish("broadcast-103", new BroadcastEvent(42));
+    expect(node101.node.log[0].value).toBe(42);
+    expect(node101.node.log[0].term).toBe(1);
+  });
+
+  it("nodes replicate events from leader", () => {
+    const eventBus = new ProdEventBus();
+    const storage = new RaftStorage();
+    const timers = new Timers(eventBus);
+
+    const node101 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      101,
+      [101, 102, 103],
+      false
+    );
+    const node102 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      102,
+      [101, 102, 103],
+      false
+    );
+    const node103 = new RaftNode(
+      storage,
+      timers,
+      eventBus,
+      103,
+      [101, 102, 103],
+      false
+    );
+
+    timeoutLeaderFailure(101, timers);
+    timeoutLeaderLogReplicate(101, timers);
+
+    eventBus.publish("broadcast-103", new BroadcastEvent(42));
+    eventBus.publish("broadcast-103", new BroadcastEvent(43));
+    eventBus.publish("broadcast-103", new BroadcastEvent(44));
+    eventBus.publish("broadcast-103", new BroadcastEvent(45));
+    timeoutLeaderLogReplicate(101, timers);
+
+    expectLogMatches(node101, node102);
+    expectLogMatches(node101, node103);
   });
 });

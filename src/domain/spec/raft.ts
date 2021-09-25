@@ -257,6 +257,11 @@ export class RaftNode {
       `replicate-log-${this.node.id}`,
       (logRequest) => this.onLogRequest(logRequest)
     );
+    this.eventBus.subscribe(
+      `log-response-${this.node.id}`,
+      `log-response-${this.node.id}`,
+      (logResponse) => this.onLogResponse(logResponse)
+    );
     if (!recoveringFromCrash) {
       this.init();
     } else {
@@ -295,7 +300,6 @@ export class RaftNode {
     this.leaderFailureTimer = timer;
   }
 
-  // TODO replicate log timer continuously
   startLeaderReplicateLogTimer(): void {
     this.cancelLeaderReplicateLogTimer();
     const timerName = `node-${this.node.id}-timer-leaderReplicateLog`;
@@ -481,11 +485,15 @@ export class RaftNode {
       this.node.nodes
         .filter((node) => this.node.id != node)
         .forEach((node) => this.replicateLog(node));
+      this.startLeaderReplicateLogTimer();
     }
   }
 
   private onLogRequest(event: Event) {
     const logRequest = event as LogRequest;
+    console.log(
+      `Node ${this.node.id} received log request from leader ${logRequest.leaderId} (entries size: ${logRequest.entries.length})`
+    );
     if (logRequest.term > this.node.currentTerm) {
       this.node.currentTerm = logRequest.term;
       this.node.votedFor = null;
@@ -551,6 +559,9 @@ export class RaftNode {
 
   onLogResponse(event: Event): void {
     const logResponse = event as LogResponse;
+    console.log(
+      `Node ${this.node.id} received log response from node ${logResponse.follower} (success: ${logResponse.success})`
+    );
     if (
       logResponse.term == this.node.currentTerm &&
       this.node.currentRole == NodeRole.Leader
