@@ -52,8 +52,28 @@ export class VoteResponse {
   ) {}
 }
 
-class BroadcastEvent {
+export class BroadcastEvent {
   constructor(readonly log: number) {}
+}
+
+class LogRequest {
+  constructor(
+    readonly leaderId: NodeId,
+    readonly term: number,
+    readonly logLength: number,
+    readonly logTerm: number,
+    readonly leaderCommit: number,
+    readonly entries: Log[]
+  ) {}
+}
+
+class LogResponse {
+  constructor(
+    readonly follower: NodeId,
+    readonly term: number,
+    readonly ack: number,
+    readonly success: boolean
+  ) {}
 }
 
 type Event =
@@ -61,7 +81,9 @@ type Event =
   | NodeTransition
   | VoteRequest
   | VoteResponse
-  | BroadcastEvent;
+  | BroadcastEvent
+  | LogRequest
+  | LogResponse;
 
 class Subscription {
   constructor(
@@ -123,13 +145,6 @@ export class Timers {
     this.timers.push(timer);
   }
 
-  private removeTimer(timer: Timer): void {
-    const index = this.timers.indexOf(timer, 0);
-    if (index > -1) {
-      this.timers.splice(index, 1);
-    }
-  }
-
   timeout(timer: Timer): void {
     const index = this.timers.indexOf(timer, 0);
     if (index > -1) {
@@ -140,6 +155,13 @@ export class Timers {
 
   cancel(timer: Timer): void {
     this.removeTimer(timer);
+  }
+
+  private removeTimer(timer: Timer): void {
+    const index = this.timers.indexOf(timer, 0);
+    if (index > -1) {
+      this.timers.splice(index, 1);
+    }
   }
 }
 
@@ -180,6 +202,7 @@ export class RaftNode {
 
   electionTimer: Timer | undefined;
   leaderFailureTimer: Timer | undefined;
+  leaderReplicateLogTimer: Timer | undefined;
 
   constructor(
     storage: RaftStorage,
@@ -210,6 +233,11 @@ export class RaftNode {
       () => this.onElectionTimeoutOrLeaderFailed()
     );
     this.eventBus.subscribe(
+      `node-${this.node.id}-timer-leaderReplicateLog`,
+      `node-${this.node.id}-timer-leaderReplicateLog`,
+      () => this.onLeaderReplicateLogTimeout()
+    );
+    this.eventBus.subscribe(
       `node-${this.node.id}-vote-requests`,
       `vote-requests`,
       (voteRequest) => this.onVoteRequest(voteRequest)
@@ -221,13 +249,13 @@ export class RaftNode {
     );
     this.eventBus.subscribe(
       `broadcast-${this.node.id}`,
-      `broadcast`,
+      `broadcast-${this.node.id}`,
       (broadcast) => this.broadcast(broadcast)
     );
     this.eventBus.subscribe(
-      `broadcast-${this.node.id}`,
-      `leader-broadcast`,
-      (broadcast) => this.broadcast(broadcast)
+      `replicate-log-${this.node.id}`,
+      `replicate-log-${this.node.id}`,
+      (logRequest) => this.onLogRequest(logRequest)
     );
     if (!recoveringFromCrash) {
       this.init();
@@ -252,6 +280,7 @@ export class RaftNode {
   }
 
   startLeaderFailureTimer(): void {
+    this.cancelLeaderFailureTimer();
     const timerName = `node-${this.node.id}-timer-leaderFailure`;
     const timer = new Timer(new Date(), timerName, new TimerTimeout());
     this.timers.addTimer(timer);
@@ -259,10 +288,20 @@ export class RaftNode {
   }
 
   startElectionTimer(): void {
+    this.cancelElectionTimer();
     const timerName = `node-${this.node.id}-timer-election`;
     const timer = new Timer(new Date(), timerName, new TimerTimeout());
     this.timers.addTimer(timer);
     this.leaderFailureTimer = timer;
+  }
+
+  // TODO replicate log timer continuously
+  startLeaderReplicateLogTimer(): void {
+    this.cancelLeaderReplicateLogTimer();
+    const timerName = `node-${this.node.id}-timer-leaderReplicateLog`;
+    const timer = new Timer(new Date(), timerName, new TimerTimeout());
+    this.timers.addTimer(timer);
+    this.leaderReplicateLogTimer = timer;
   }
 
   cancelElectionTimer(): void {
@@ -273,6 +312,11 @@ export class RaftNode {
   cancelLeaderFailureTimer(): void {
     this.cancelTimer(this.leaderFailureTimer);
     this.leaderFailureTimer = undefined;
+  }
+
+  cancelLeaderReplicateLogTimer(): void {
+    this.cancelTimer(this.leaderReplicateLogTimer);
+    this.leaderReplicateLogTimer = undefined;
   }
 
   cancelTimer(timer: Timer | undefined): void {
@@ -287,7 +331,10 @@ export class RaftNode {
       console.log(
         `Node ${this.node.id} receiving vote request from node ${voteRequest.candidateId}`
       );
-      const myLogTerm = this.node.log[this.node.log.length - 1].term;
+      const myLogTerm = this.findLogIndexTerm(
+        this.node.log.length,
+        this.node.currentTerm
+      );
       const logOk =
         voteRequest.candidateLogTerm > myLogTerm ||
         (voteRequest.candidateLogTerm == myLogTerm &&
@@ -307,12 +354,21 @@ export class RaftNode {
           this.node.currentTerm,
           true
         );
-        this.eventBus.publish(`vote-response-${this.node.id}`, response);
+        console.log(
+          `Node ${this.node.id} votes for ${voteRequest.candidateId}`
+        );
+        this.eventBus.publish(
+          `vote-response-${voteRequest.candidateId}`,
+          response
+        );
       } else {
         const response = new VoteResponse(
           this.node.id,
           this.node.currentTerm,
           false
+        );
+        console.log(
+          `Node ${this.node.id} does not vote for ${voteRequest.candidateId}`
         );
         this.eventBus.publish(`vote-response-${this.node.id}`, response);
       }
@@ -330,7 +386,10 @@ export class RaftNode {
       voteResponse.granted
     ) {
       this.node.votesReceived.push(voteResponse.voterId);
-      if (this.node.votesReceived.length >= (this.node.nodes.length + 1) / 2) {
+      if (
+        this.node.votesReceived.length >=
+        Math.ceil((this.node.nodes.length + 1) / 2)
+      ) {
         console.log(`Node ${this.node.id} entering leader state`);
         this.node.currentRole = NodeRole.Leader;
         this.node.currentLeader = this.node.id;
@@ -340,7 +399,7 @@ export class RaftNode {
           .forEach((follower) => {
             this.node.sentLength[follower] = this.node.log.length;
             this.node.ackedLength[follower] = 0;
-            this.replicateLog(follower);
+            this.startLeaderReplicateLogTimer();
           });
       }
     } else if (voteResponse.term > this.node.currentTerm) {
@@ -361,6 +420,7 @@ export class RaftNode {
     if (this.node.log.length > 0) {
       lastTerm = this.node.log[this.node.log.length - 1].term;
     }
+    console.log(`Node ${this.node.id} sending vote request to all nodes`);
     const voteRequest = new VoteRequest(
       this.node.id,
       this.node.currentTerm,
@@ -372,19 +432,181 @@ export class RaftNode {
 
   private replicateLog(follower: NodeId) {
     const i = this.node.sentLength[follower];
+    const entries = this.node.log.slice(i);
+    let prevLogTerm = 0;
+    if (i > 0) {
+      prevLogTerm = this.node.log[i - 1].term;
+    }
+    const logRequest = new LogRequest(
+      this.node.id,
+      this.node.currentTerm,
+      i,
+      prevLogTerm,
+      this.node.commitLength,
+      entries
+    );
+    console.log(
+      `Node ${this.node.id} sends log request to follower ${follower}`
+    );
+    this.eventBus.publish(`replicate-log-${follower}`, logRequest);
   }
 
   private broadcast(event: Event) {
     const broadcastEvent = event as BroadcastEvent;
     if (this.node.currentRole == NodeRole.Leader) {
+      console.log(
+        `Node ${this.node.id} as leader received broadcast event:`,
+        broadcastEvent
+      );
       this.appendRecordToLog(broadcastEvent);
     } else {
-      this.eventBus.publish("leader-broadcast", event);
+      console.log(
+        `Node ${this.node.id} forward broadcast event to leader ${this.node.currentLeader}:`,
+        broadcastEvent
+      );
+      this.eventBus.publish(`broadcast-${this.node.currentLeader}`, event);
     }
   }
 
   private appendRecordToLog(broadcastEvent: BroadcastEvent) {
     this.node.log.push(new Log(broadcastEvent.log, this.node.currentTerm));
     this.node.ackedLength[this.node.id] = this.node.log.length;
+  }
+
+  private onLeaderReplicateLogTimeout() {
+    if (this.node.currentRole == NodeRole.Leader) {
+      console.log(
+        `Node ${this.node.id} sends replicate node request to all nodes`
+      );
+      this.node.nodes
+        .filter((node) => this.node.id != node)
+        .forEach((node) => this.replicateLog(node));
+    }
+  }
+
+  private onLogRequest(event: Event) {
+    const logRequest = event as LogRequest;
+    if (logRequest.term > this.node.currentTerm) {
+      this.node.currentTerm = logRequest.term;
+      this.node.votedFor = null;
+      this.node.currentRole = NodeRole.Follower;
+      this.node.currentLeader = logRequest.leaderId;
+    }
+    if (logRequest.term == this.node.currentTerm) {
+      this.node.currentRole = NodeRole.Follower;
+      this.node.currentLeader = logRequest.leaderId;
+    }
+    const logOk =
+      this.node.log.length >= logRequest.logLength &&
+      (logRequest.logLength == 0 ||
+        logRequest.logTerm == this.node.log[this.node.log.length - 1].term);
+
+    if (logRequest.term == this.node.currentTerm && logOk) {
+      this.appendEntries(
+        logRequest.logLength,
+        logRequest.leaderCommit,
+        logRequest.entries
+      );
+      const ack = logRequest.logLength + logRequest.entries.length;
+      const response = new LogResponse(
+        this.node.id,
+        this.node.currentTerm,
+        ack,
+        true
+      );
+      this.eventBus.publish(`log-response-${logRequest.leaderId}`, response);
+    } else {
+      const response = new LogResponse(
+        this.node.id,
+        this.node.currentTerm,
+        0,
+        false
+      );
+      this.eventBus.publish(`log-response-${logRequest.leaderId}`, response);
+    }
+  }
+
+  private appendEntries(
+    logLength: number,
+    leaderCommit: number,
+    entries: Log[]
+  ) {
+    if (entries.length > 0 && this.node.log.length > logLength) {
+      if (this.node.log[logLength].term != entries[0].term) {
+        this.node.log = this.node.log.slice(0, logLength - 1);
+      }
+    }
+    if (logLength + entries.length > this.node.log.length) {
+      for (let i = this.node.log.length - logLength; i < entries.length; i++) {
+        this.node.log.push(entries[i]);
+      }
+    }
+    if (leaderCommit > this.node.commitLength) {
+      for (let i = this.node.commitLength; i < leaderCommit; i++) {
+        console.log(`Delivering log ${this.node.log[i].value}`);
+      }
+      this.node.commitLength = leaderCommit;
+    }
+  }
+
+  onLogResponse(event: Event): void {
+    const logResponse = event as LogResponse;
+    if (
+      logResponse.term == this.node.currentTerm &&
+      this.node.currentRole == NodeRole.Leader
+    ) {
+      if (
+        logResponse.success &&
+        logResponse.ack >= this.node.ackedLength[logResponse.follower]
+      ) {
+        this.node.sentLength[logResponse.follower] = logResponse.ack;
+        this.node.ackedLength[logResponse.follower] = logResponse.ack;
+        this.commitLogEntries();
+      } else if (this.node.sentLength[logResponse.follower] > 0) {
+        this.node.sentLength[logResponse.follower] =
+          this.node.sentLength[logResponse.follower] - 1;
+      }
+    } else if (logResponse.term > this.node.currentTerm) {
+      this.node.currentTerm = logResponse.term;
+      this.node.currentRole = NodeRole.Follower;
+      this.node.votedFor = null;
+    }
+  }
+
+  private commitLogEntries() {
+    const acks = (length: number) =>
+      this.node.nodes.filter((node) => this.node.ackedLength[node] >= length)
+        .length;
+    const minAcks = Math.ceil((this.node.nodes.length + 1) / 2);
+    const ready = [...Array(this.node.log.length)]
+      .map((i) => i + 1)
+      .filter((i) => acks(i) > minAcks);
+    if (
+      ready.length != 0 &&
+      Math.max(...ready) > this.node.commitLength &&
+      this.node.log[Math.max(...ready) - 1].term == this.node.currentTerm
+    ) {
+      for (let i = this.node.commitLength; i < Math.max(...ready); i++) {
+        console.log(`Delivering log ${this.node.log[i].value}`);
+      }
+      this.node.commitLength = Math.max(...ready);
+    }
+  }
+
+  private findLogByIndex(index: number): Log | undefined {
+    if (index < this.node.log.length) {
+      return this.node.log[index];
+    } else {
+      return undefined;
+    }
+  }
+
+  private findLogIndexTerm(index: number, defaultTerm: number): number {
+    const log = this.findLogByIndex(index);
+    if (log != undefined) {
+      return log.term;
+    } else {
+      return defaultTerm;
+    }
   }
 }
