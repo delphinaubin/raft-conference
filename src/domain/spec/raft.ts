@@ -52,7 +52,16 @@ export class VoteResponse {
   ) {}
 }
 
-type Event = TimerTimeout | NodeTransition | VoteRequest | VoteResponse;
+class BroadcastEvent {
+  constructor(readonly log: number) {}
+}
+
+type Event =
+  | TimerTimeout
+  | NodeTransition
+  | VoteRequest
+  | VoteResponse
+  | BroadcastEvent;
 
 class Subscription {
   constructor(
@@ -110,18 +119,18 @@ export class Timers {
     this.eventBus = eventBus;
   }
 
-  addTimer(timer: Timer) {
+  addTimer(timer: Timer): void {
     this.timers.push(timer);
   }
 
-  removeTimer(timer: Timer) {
+  private removeTimer(timer: Timer): void {
     const index = this.timers.indexOf(timer, 0);
     if (index > -1) {
       this.timers.splice(index, 1);
     }
   }
 
-  timeout(timer: Timer) {
+  timeout(timer: Timer): void {
     const index = this.timers.indexOf(timer, 0);
     if (index > -1) {
       this.removeTimer(timer);
@@ -129,12 +138,12 @@ export class Timers {
     }
   }
 
-  cancel(timer: Timer) {
+  cancel(timer: Timer): void {
     this.removeTimer(timer);
   }
 }
 
-enum NodeRole {
+export enum NodeRole {
   Follower,
   Candidate,
   Leader,
@@ -167,8 +176,10 @@ export class RaftNode {
   storage: RaftStorage;
   timers: Timers;
   eventBus: EventBus;
-  data: NodeData;
-  role: Role;
+  node: NodeData;
+
+  electionTimer: Timer | undefined;
+  leaderFailureTimer: Timer | undefined;
 
   constructor(
     storage: RaftStorage,
@@ -183,83 +194,56 @@ export class RaftNode {
     this.eventBus = eventBus;
     const nodeData = storage.retrieve(id);
     if (nodeData == undefined) {
-      this.data = new NodeData(id, nodes);
+      this.node = new NodeData(id, nodes);
     } else {
-      this.data = nodeData;
+      this.node = nodeData;
     }
-    this.data.nodes = nodes;
-    this.role = new Follower(this.eventBus, this.timers, this.data);
+    this.node.nodes = nodes;
     this.eventBus.subscribe(
-      `node-${this.data.id}-timer-leaderFailure`,
-      `node-${this.data.id}-timer-leaderFailure`,
-      this.onLeaderFailureTimer
+      `node-${this.node.id}-timer-leaderFailure`,
+      `node-${this.node.id}-timer-leaderFailure`,
+      () => this.onElectionTimeoutOrLeaderFailed()
     );
     this.eventBus.subscribe(
-      `node-${this.data.id}-vote-requests`,
+      `node-${this.node.id}-timer-election`,
+      `node-${this.node.id}-timer-election`,
+      () => this.onElectionTimeoutOrLeaderFailed()
+    );
+    this.eventBus.subscribe(
+      `node-${this.node.id}-vote-requests`,
       `vote-requests`,
-      this.onVoteRequest
+      (voteRequest) => this.onVoteRequest(voteRequest)
+    );
+    this.eventBus.subscribe(
+      `vote-response-${this.node.id}`,
+      `vote-response-${this.node.id}`,
+      (voteResponse) => this.onVoteResponse(voteResponse)
+    );
+    this.eventBus.subscribe(
+      `broadcast-${this.node.id}`,
+      `broadcast`,
+      (broadcast) => this.broadcast(broadcast)
+    );
+    this.eventBus.subscribe(
+      `broadcast-${this.node.id}`,
+      `leader-broadcast`,
+      (broadcast) => this.broadcast(broadcast)
     );
     if (!recoveringFromCrash) {
-      this.role.init();
+      this.init();
     } else {
-      this.role.recover();
+      this.recover();
     }
-  }
-
-  onLeaderFailureTimer(): void {
-    this.role.onLeaderFailureTimer();
-  }
-
-  onNodeTransition(transition: NodeTransition): void {
-    if (transition.newRole == NodeRole.Follower) {
-      if (this.data.currentRole != NodeRole.Follower) {
-        this.role = new Follower(this.eventBus, this.timers, this.data);
-      }
-    } else if (transition.newRole == NodeRole.Candidate) {
-      if (this.data.currentRole != NodeRole.Candidate) {
-        this.role = new Candidate(this.eventBus, this.timers, this.data);
-      }
-    }
-    this.role.init();
-  }
-
-  onVoteRequest(voteRequest: Event) {
-    this.role.onVoteRequest(voteRequest as VoteRequest);
-  }
-}
-
-export interface Role {
-  init(): void;
-  recover(): void;
-  leaveState(): void;
-  onLeaderFailureTimer(): void;
-  onVoteRequest(voteRequest: VoteRequest): void;
-}
-
-export class Follower implements Role {
-  eventBus: EventBus;
-  timers: Timers;
-  node: NodeData;
-  activeTimers: Timer[] = [];
-
-  constructor(eventBus: EventBus, timers: Timers, data: NodeData) {
-    this.eventBus = eventBus;
-    this.timers = timers;
-    this.node = data;
-  }
-
-  onLeaderFailureTimer(): void {
-    this.node.currentTerm += 1;
   }
 
   init(): void {
-    console.log(`node ${this.node.id} entering follower state`);
+    console.log(`Node ${this.node.id} entering follower state`);
     this.node.currentRole = NodeRole.Follower;
-    this.launchLeaderFailureTimer();
+    this.startLeaderFailureTimer();
   }
 
   recover(): void {
-    console.log(`node ${this.node.id} is recovering from crash`);
+    console.log(`Node ${this.node.id} is recovering from crash`);
     this.node.currentLeader = null;
     this.node.votesReceived = [];
     this.node.votedFor = null;
@@ -267,26 +251,42 @@ export class Follower implements Role {
     this.node.ackedLength = [];
   }
 
-  leaveState(): void {
-    console.log(`node ${this.node.id} leaving candidate state`);
-    this.activeTimers.forEach((timer) => this.timers.cancel(timer));
-  }
-
-  launchLeaderFailureTimer(): void {
-    const timer = new Timer(
-      new Date(),
-      `node-${this.node.id}-timer-leaderFailure`,
-      new TimerTimeout()
-    );
+  startLeaderFailureTimer(): void {
+    const timerName = `node-${this.node.id}-timer-leaderFailure`;
+    const timer = new Timer(new Date(), timerName, new TimerTimeout());
     this.timers.addTimer(timer);
-    this.activeTimers.push(timer);
+    this.leaderFailureTimer = timer;
   }
 
-  onVoteRequest(voteRequest: VoteRequest): void {
-    console.log(
-      `Follower ${this.node.id} receiving vote request from node ${voteRequest.candidateId}`
-    );
+  startElectionTimer(): void {
+    const timerName = `node-${this.node.id}-timer-election`;
+    const timer = new Timer(new Date(), timerName, new TimerTimeout());
+    this.timers.addTimer(timer);
+    this.leaderFailureTimer = timer;
+  }
+
+  cancelElectionTimer(): void {
+    this.cancelTimer(this.electionTimer);
+    this.electionTimer = undefined;
+  }
+
+  cancelLeaderFailureTimer(): void {
+    this.cancelTimer(this.leaderFailureTimer);
+    this.leaderFailureTimer = undefined;
+  }
+
+  cancelTimer(timer: Timer | undefined): void {
+    if (timer != undefined) {
+      this.timers.cancel(timer);
+    }
+  }
+
+  onVoteRequest(event: Event): void {
+    const voteRequest = event as VoteRequest;
     if (voteRequest.candidateId != this.node.id) {
+      console.log(
+        `Node ${this.node.id} receiving vote request from node ${voteRequest.candidateId}`
+      );
       const myLogTerm = this.node.log[this.node.log.length - 1].term;
       const logOk =
         voteRequest.candidateLogTerm > myLogTerm ||
@@ -300,7 +300,7 @@ export class Follower implements Role {
 
       if (logOk && termOk) {
         this.node.currentTerm = voteRequest.candidateTerm;
-        // reset to follower
+        this.node.currentRole = NodeRole.Follower;
         this.node.votedFor = voteRequest.candidateId;
         const response = new VoteResponse(
           this.node.id,
@@ -308,25 +308,51 @@ export class Follower implements Role {
           true
         );
         this.eventBus.publish(`vote-response-${this.node.id}`, response);
+      } else {
+        const response = new VoteResponse(
+          this.node.id,
+          this.node.currentTerm,
+          false
+        );
+        this.eventBus.publish(`vote-response-${this.node.id}`, response);
       }
     }
   }
-}
 
-export class Candidate implements Role {
-  eventBus: EventBus;
-  timers: Timers;
-  node: NodeData;
-  activeTimers: Timer[] = [];
-
-  constructor(eventBus: EventBus, timers: Timers, data: NodeData) {
-    this.eventBus = eventBus;
-    this.timers = timers;
-    this.node = data;
+  onVoteResponse(event: Event): void {
+    const voteResponse = event as VoteResponse;
+    console.log(
+      `Node ${this.node.id} receiving vote response from ${voteResponse.voterId} (granted: ${voteResponse.granted})`
+    );
+    if (
+      this.node.currentRole == NodeRole.Candidate &&
+      this.node.currentTerm == voteResponse.term &&
+      voteResponse.granted
+    ) {
+      this.node.votesReceived.push(voteResponse.voterId);
+      if (this.node.votesReceived.length >= (this.node.nodes.length + 1) / 2) {
+        console.log(`Node ${this.node.id} entering leader state`);
+        this.node.currentRole = NodeRole.Leader;
+        this.node.currentLeader = this.node.id;
+        this.cancelElectionTimer();
+        this.node.nodes
+          .filter((nodeId) => nodeId != this.node.id)
+          .forEach((follower) => {
+            this.node.sentLength[follower] = this.node.log.length;
+            this.node.ackedLength[follower] = 0;
+            this.replicateLog(follower);
+          });
+      }
+    } else if (voteResponse.term > this.node.currentTerm) {
+      this.node.currentTerm = voteResponse.term;
+      this.node.currentRole = NodeRole.Follower;
+      this.node.votedFor = null;
+      this.cancelElectionTimer();
+    }
   }
 
-  init(): void {
-    console.log(`node ${this.node.id} entering candidate state`);
+  onElectionTimeoutOrLeaderFailed(): void {
+    console.log(`Node ${this.node.id} entering candidate state`);
     this.node.currentRole = NodeRole.Candidate;
     this.node.currentTerm += 1;
     this.node.votedFor = this.node.id;
@@ -344,23 +370,21 @@ export class Candidate implements Role {
     this.eventBus.publish("vote-requests", voteRequest);
   }
 
-  recover(): void {
-    console.warn(`node ${this.node.id} in candidate state can't recover`);
+  private replicateLog(follower: NodeId) {
+    const i = this.node.sentLength[follower];
   }
 
-  leaveState(): void {
-    console.log(`node ${this.node.id} leaving candidate state`);
+  private broadcast(event: Event) {
+    const broadcastEvent = event as BroadcastEvent;
+    if (this.node.currentRole == NodeRole.Leader) {
+      this.appendRecordToLog(broadcastEvent);
+    } else {
+      this.eventBus.publish("leader-broadcast", event);
+    }
   }
 
-  onLeaderFailureTimer(): void {
-    console.warn(
-      `node ${this.node.id} in candidate state ignoring leader failure timer`
-    );
-  }
-
-  onVoteRequest(voteRequest: VoteRequest): void {
-    console.log(
-      `Candidate ${this.node.id} receiving vote request from node ${voteRequest.candidateId}. The request is denied.`
-    );
+  private appendRecordToLog(broadcastEvent: BroadcastEvent) {
+    this.node.log.push(new Log(broadcastEvent.log, this.node.currentTerm));
+    this.node.ackedLength[this.node.id] = this.node.log.length;
   }
 }

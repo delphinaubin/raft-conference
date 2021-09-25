@@ -4,6 +4,7 @@ import {
   Timer,
   ProdEventBus,
   TimerTimeout,
+  NodeRole,
   RaftNode,
 } from "./raft";
 
@@ -72,5 +73,15 @@ describe("follower", () => {
 
     const node = new RaftNode(storage, timers, eventBus, 101, [101], false);
     expect(timers.timers[0]).toBeDefined();
+  });
+
+  it("becomes candidate on leader failure", () => {
+    const eventBus = new ProdEventBus();
+    const storage = new RaftStorage();
+    const timers = new Timers(eventBus);
+
+    const node = new RaftNode(storage, timers, eventBus, 101, [101], false);
+    timers.timeout(timers.timers[0]);
+    expect(node.node.currentRole).toBe(NodeRole.Candidate);
   });
 });
