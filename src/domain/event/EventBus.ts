@@ -1,7 +1,8 @@
 import { NetworkEvent } from "@/domain/event/NetworkEventBuilder";
 import { ChangeStateEvent } from "@/domain/event/ChangeStateEventBuilder";
+import { TimerEvent } from "@/domain/event/TimerEventBuilder";
 
-export type RaftEvent = NetworkEvent | ChangeStateEvent; // TODO DAU : add the | all new event types
+export type RaftEvent = NetworkEvent | ChangeStateEvent | TimerEvent; // TODO DAU : add the | all new event types
 type Subscriber = (event: RaftEvent) => Promise<void> | void;
 
 function* eventIdGenerator(): Generator<number> {

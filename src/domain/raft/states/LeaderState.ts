@@ -4,8 +4,10 @@ export class LeaderState extends NodeAlgorithmState {
   name = "leader" as const;
 
   async onEnterInState(): Promise<void> {
-    setTimeout(() => {
-      this.changeState("candidate");
-    }, 3000);
+    await super.onEnterInState();
+    this.startTimer(2000).then(async () => {
+      console.log("after the timer", this.nodeId);
+      await this.changeState("candidate");
+    });
   }
 }

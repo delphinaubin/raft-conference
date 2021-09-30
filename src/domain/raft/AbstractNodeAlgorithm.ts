@@ -34,6 +34,7 @@ export abstract class AbstractNodeAlgorithm {
   abstract getInitialState(): RaftNodeState;
 
   async goToState(newState: RaftNodeState): Promise<void> {
+    this.currentState && (await this.currentState.onLeaveState());
     this.currentState = this.allStates[newState];
     await this.currentState.onEnterInState();
   }
