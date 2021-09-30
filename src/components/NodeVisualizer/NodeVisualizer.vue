@@ -68,40 +68,10 @@ import { RaftNode, RaftNodeState } from "@/domain/RaftNode";
 import { Options, Vue } from "vue-class-component";
 import { NetworkLink, NetworkLinkStatus } from "@/domain/NetworkLink";
 import { getLayoutFromNodeIds } from "@/components/NodeVisualizer/getLayoutFromNodeIds";
-
-const NODE_STATE_STYLE: Record<RaftNodeState, NodeStyle> = {
-  leader: {
-    icon: "👑",
-    color: "white",
-    borderColor: "royalBlue",
-    labelColor: "royalBlue",
-  },
-  candidate: {
-    icon: "☝️",
-    color: "white",
-    borderColor: "navy",
-    labelColor: "navy",
-  },
-  follower: {
-    icon: "😶",
-    color: "white",
-    borderColor: "slateGrey",
-    labelColor: "slateGrey",
-  },
-  off: {
-    icon: "❌",
-    color: "white",
-    borderColor: "orangeRed",
-    labelColor: "red",
-  },
-} as const;
-
-interface NodeStyle {
-  icon: string;
-  color: string;
-  borderColor: string;
-  labelColor: string;
-}
+import {
+  NODE_STATE_STYLE,
+  NodeStyle,
+} from "@/components/NodeVisualizer/nodeStateStyle";
 
 type GraphNode = Node & { state: RaftNodeState };
 type GraphEdge = Edge & { status: NetworkLinkStatus };
@@ -189,7 +159,7 @@ export default class NodeVisualizer extends Vue {
           target: {
             type: "arrow",
             width: 4,
-            height: 4
+            height: 4,
           },
         },
         normal: {

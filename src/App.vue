@@ -9,6 +9,7 @@
     @selected-nodes-change="selectedNodesChange"
     @selected-network-links-change="selectedNetwotkLinksChange"
   ></NodeVisualizer>
+  <EventHistory :historyEntries="historyEntries" :nodeNamesById="nodeNamesById" />
 </template>
 
 <script lang="ts">
@@ -16,10 +17,12 @@ import { Options, Vue } from "vue-class-component";
 import NodeVisualizer from "./components/NodeVisualizer/NodeVisualizer.vue";
 import { RaftNode } from "@/domain/RaftNode";
 import { NetworkLink } from "@/domain/NetworkLink";
-import store from "@/store";
+import store, { HistoryEntry } from "@/store";
+import EventHistory from "@/components/EventHistory/EventHistory.vue";
 
 @Options({
   components: {
+    EventHistory,
     NodeVisualizer,
   },
 })
@@ -33,6 +36,14 @@ export default class App extends Vue {
 
   get networkLinks(): NetworkLink[] {
     return store.state.networkLinks;
+  }
+
+  get historyEntries(): HistoryEntry[] {
+    return store.state.history;
+  }
+
+  get nodeNamesById(): Map<string, string> {
+    return new Map(store.state.nodes.map((node) => [node.id, node.name]));
   }
 
   resetSelection(): void {

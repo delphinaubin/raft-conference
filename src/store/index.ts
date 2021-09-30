@@ -1,13 +1,17 @@
 import { createStore } from "vuex";
 import { RaftNode, RaftNodeState } from "@/domain/RaftNode";
 import { NetworkLink } from "@/domain/NetworkLink";
-import { NodeAlgorithm } from "@/domain/raft/NodeAlgorithm";
-import { CandidateState } from "@/domain/raft/states/CandidateState";
-import { FollowerState } from "@/domain/raft/states/FollowerState";
-import { LeaderState } from "@/domain/raft/states/LeaderState";
-import { OffState } from "@/domain/raft/states/OffState";
+import { eventBus, nodes, nodesToCreate } from "@/store/bindRaftToStore";
+import { RaftEvent } from "@/domain/event/EventBus";
+import { getNetworkLinksBetweenNodes } from "@/store/getNetworkLinksBetweenNodes";
+import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
+
+export interface HistoryEntry {
+  raftEvent: RaftEvent;
+}
 
 export interface State {
+  history: HistoryEntry[];
   nodes: RaftNode[];
   networkLinks: NetworkLink[];
 }
@@ -15,9 +19,22 @@ export interface State {
 const initialState: State = {
   nodes: [],
   networkLinks: [],
+  history: [
+    {
+      // TODO DAU : remove this dummy entry
+      raftEvent: {
+        type: "network",
+        networkRequest: {
+          fromNodeId: "1",
+          toNodeId: "2",
+          payload: "yolo",
+        },
+      },
+    },
+  ],
 };
 
-export default createStore({
+const store = createStore({
   state: initialState,
   mutations: {
     setNodes(state, nodes: RaftNode[]) {
@@ -36,65 +53,44 @@ export default createStore({
         }
       });
     },
+    addEventToHistory(state, event: RaftEvent) {
+      state.history.push({
+        raftEvent: event,
+      });
+    },
   },
   actions: {
-    init({ commit }): void {
-      const nodesToCreate: RaftNode[] = [
-        { id: "1", name: "Node 1", state: "leader" },
-        { id: "2", name: "Node 2", state: "leader" },
-        { id: "3", name: "Node 3", state: "leader" },
-      ];
-
-      const nodes = new Map(
-        nodesToCreate.map((node) => {
-          return [
-            node.id,
-            new NodeAlgorithm(
-              {
-                candidate: new CandidateState(),
-                follower: new FollowerState(),
-                leader: new LeaderState(),
-                off: new OffState(),
-              },
-              {
-                async beforeStateChange(
-                  oldState: RaftNodeState,
-                  newState: RaftNodeState
-                ): Promise<void> {
-                  console.log("beforeStateChange", oldState, newState);
-                },
-                async afterStateChange(
-                  oldState: RaftNodeState,
-                  newState: RaftNodeState
-                ): Promise<void> {
-                  commit("setNodeState", { nodeId: node.id, newState });
-
-                  console.log("afterStateChange", oldState, newState);
-                },
-              }
-            ),
-          ];
-        })
-      );
-      const networkLinks = nodesToCreate.reduce((allLinks, node) => {
-        return [
-          ...allLinks,
-          ...nodesToCreate
-            .filter((n) => n.id !== node.id)
-            .map(
-              (n): NetworkLink => ({
-                fromNodeId: node.id,
-                toNodeId: n.id,
-                status: "connected",
-              })
-            ),
-        ];
-      }, <NetworkLink[]>[]);
-
+    async init({ commit }): Promise<void> {
       commit("setNodes", nodesToCreate);
-      commit("setNetworkLinks", networkLinks)
-
+      commit("setNetworkLinks", getNetworkLinksBetweenNodes(nodesToCreate));
+      await Array.from(nodes.values()).reduce(async (lastPromise, node) => {
+        await lastPromise;
+        await eventBus.emitEvent(
+          ChangeStateEventBuilder.aChangeStateEvent()
+            .forNodeId(node.id)
+            .toState(node.getInitialState())
+            .build()
+        );
+      }, Promise.resolve());
+    },
+    eventBusEvent({ commit }, event: RaftEvent): void {
+      switch (event.type) {
+        case "change-state": {
+          commit("setNodeState", {
+            nodeId: event.nodeId,
+            newState: event.toState,
+          });
+        }
+      }
+      commit("addEventToHistory", event);
     },
   },
   modules: {},
 });
+
+eventBus.subscribe(async (event) => {
+  console.log(event);
+  await store.dispatch("eventBusEvent", event);
+});
+
+export default store;

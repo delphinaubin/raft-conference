@@ -1,39 +1,40 @@
 import { RaftNodeState } from "@/domain/RaftNode";
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
+import { EventBus } from "@/domain/event/EventBus";
 
 type NodeAlgorithmStates = Record<RaftNodeState, NodeAlgorithmState>;
 
-interface AbstractNodeAlgorithmEventHandler {
-  beforeStateChange(
-    oldState: RaftNodeState | undefined,
-    newState: RaftNodeState
-  ): Promise<void>;
-
-  afterStateChange(
-    oldState: RaftNodeState,
-    newState: RaftNodeState
-  ): Promise<void>;
-}
-
 export abstract class AbstractNodeAlgorithm {
-  protected state!: NodeAlgorithmState;
+  protected currentState!: NodeAlgorithmState;
   constructor(
     protected readonly allStates: NodeAlgorithmStates,
-    private readonly eventHandler: AbstractNodeAlgorithmEventHandler
+    private readonly eventBus: EventBus,
+    public readonly id: string
   ) {
-    this.goToState(this.getInitialState());
+    eventBus.subscribe(async (event) => {
+      switch (event.type) {
+        case "change-state": {
+          if (event.nodeId === this.id) {
+            await this.goToState(event.toState);
+          }
+          break;
+        }
+        case "network": {
+          if (event.networkRequest.toNodeId === this.id) {
+            await this.currentState.onReceiveNetworkRequest(
+              event.networkRequest.payload
+            );
+          }
+          break;
+        }
+      }
+    });
   }
 
   abstract getInitialState(): RaftNodeState;
 
   async goToState(newState: RaftNodeState): Promise<void> {
-    const oldState = this.state?.name;
-    await this.eventHandler.beforeStateChange(oldState, newState);
-    this.state = this.allStates[newState];
-    this.state.onChangeState((newState) => {
-      this.goToState(newState);
-    });
-    await this.state.onEnterInState();
-    this.eventHandler.afterStateChange(oldState, newState);
+    this.currentState = this.allStates[newState];
+    await this.currentState.onEnterInState();
   }
 }

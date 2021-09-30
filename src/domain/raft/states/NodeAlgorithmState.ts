@@ -1,7 +1,12 @@
 import { RaftNodeState } from "@/domain/RaftNode";
+import { EventBus } from "@/domain/event/EventBus";
+import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
 
 export abstract class NodeAlgorithmState {
-  private changeStateCallBack?: (newState: RaftNodeState) => void;
+  constructor(
+    private readonly eventBus: EventBus,
+    protected readonly nodeId: string
+  ) {}
 
   abstract name: RaftNodeState;
 
@@ -9,11 +14,16 @@ export abstract class NodeAlgorithmState {
     return Promise.resolve(undefined);
   }
 
-  onChangeState(changeStateCallBack: (newState: RaftNodeState) => void): void {
-    this.changeStateCallBack = changeStateCallBack;
+  onReceiveNetworkRequest(_payload: unknown): Promise<void> {
+    return Promise.resolve(undefined);
   }
 
-  protected changeState(newState: RaftNodeState): void {
-    this.changeStateCallBack && this.changeStateCallBack(newState);
+  protected async changeState(newState: RaftNodeState): Promise<void> {
+    await this.eventBus.emitEvent(
+      ChangeStateEventBuilder.aChangeStateEvent()
+        .forNodeId(this.nodeId)
+        .toState(newState)
+        .build()
+    );
   }
 }
