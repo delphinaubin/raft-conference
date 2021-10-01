@@ -4,12 +4,20 @@ import { EventBus } from "@/domain/event/EventBus";
 
 type NodeAlgorithmStates = Record<RaftNodeState, NodeAlgorithmState>;
 
+export interface NodeMemoryState {
+  term: number;
+  votedFor?: string;
+  votesReceived: string[];
+}
+
 export abstract class AbstractNodeAlgorithm {
   protected currentState!: NodeAlgorithmState;
   constructor(
     protected readonly allStates: NodeAlgorithmStates,
     private readonly eventBus: EventBus,
-    public readonly id: string
+    public readonly id: string,
+    protected readonly nodeMemoryState: NodeMemoryState,
+    private readonly allNodesIds: string[]
   ) {
     eventBus.subscribe(async (event) => {
       switch (event.type) {
@@ -20,9 +28,9 @@ export abstract class AbstractNodeAlgorithm {
           break;
         }
         case "network": {
-          if (event.networkRequest.toNodeId === this.id) {
+          if (event.networkRequest.receiverNodeId === this.id) {
             await this.currentState.onReceiveNetworkRequest(
-              event.networkRequest.payload
+              event.networkRequest
             );
           }
           break;

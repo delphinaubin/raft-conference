@@ -14,22 +14,57 @@ export const nodesToCreate: RaftNode[] = [
   { id: "3", name: "Node 3", state: "off" },
 ];
 
+const INITIAL_NODE_MEMORY_STATE = () => ({
+  term: 0,
+  votesReceived: [],
+});
+
 export const eventBus = new EventBus();
 const timerManager = new TimerManager(eventBus);
 
+const allNodeIds = nodesToCreate.map(({ id }) => id);
+
 export const nodes = new Map(
   nodesToCreate.map((node) => {
+    const nodeMemoryStateReference = INITIAL_NODE_MEMORY_STATE();
+
     return [
       node.id,
       new NodeAlgorithm(
         {
-          candidate: new CandidateState(eventBus, timerManager, node.id),
-          follower: new FollowerState(eventBus, timerManager, node.id),
-          leader: new LeaderState(eventBus, timerManager, node.id),
-          off: new OffState(eventBus, timerManager, node.id),
+          candidate: new CandidateState(
+            eventBus,
+            timerManager,
+            node.id,
+            nodeMemoryStateReference,
+            allNodeIds
+          ),
+          follower: new FollowerState(
+            eventBus,
+            timerManager,
+            node.id,
+            nodeMemoryStateReference,
+            allNodeIds
+          ),
+          leader: new LeaderState(
+            eventBus,
+            timerManager,
+            node.id,
+            nodeMemoryStateReference,
+            allNodeIds
+          ),
+          off: new OffState(
+            eventBus,
+            timerManager,
+            node.id,
+            nodeMemoryStateReference,
+            allNodeIds
+          ),
         },
         eventBus,
-        node.id
+        node.id,
+        nodeMemoryStateReference,
+        allNodeIds
       ),
     ];
   })

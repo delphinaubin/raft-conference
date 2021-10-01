@@ -2,12 +2,17 @@ import { RaftNodeState } from "@/domain/RaftNode";
 import { EventBus } from "@/domain/event/EventBus";
 import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
 import { TimerManager } from "@/domain/timer/TimerManager";
+import { NodeMemoryState } from "@/domain/raft/AbstractNodeAlgorithm";
+import { NetworkRequest } from "@/domain/network/NetworkRequest";
+import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
 
 export abstract class NodeAlgorithmState {
   constructor(
     private readonly eventBus: EventBus,
     protected readonly timerManager: TimerManager,
-    protected readonly nodeId: string
+    protected readonly nodeId: string,
+    protected readonly nodeMemoryState: NodeMemoryState,
+    protected readonly allNodesIds: string[]
   ) {}
 
   private readonly runningTimers: Map<number, () => void> = new Map();
@@ -38,7 +43,7 @@ export abstract class NodeAlgorithmState {
     }
   }
 
-  onReceiveNetworkRequest(_payload: unknown): Promise<void> {
+  onReceiveNetworkRequest(_request: NetworkRequest): Promise<void> {
     return Promise.resolve(undefined);
   }
 
@@ -56,5 +61,13 @@ export abstract class NodeAlgorithmState {
     return new Promise<void>((resolve) => {
       this.runningTimers.set(timerId, resolve);
     });
+  }
+
+  protected sendNetworkRequest(request: NetworkRequest): Promise<void> {
+    return this.eventBus.emitEvent(
+      NetworkRequestEventBuilder.aNetworkRequestEvent()
+        .withNetworkRequest(request)
+        .build()
+    );
   }
 }

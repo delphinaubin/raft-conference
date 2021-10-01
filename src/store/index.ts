@@ -19,19 +19,7 @@ export interface State {
 const initialState: State = {
   nodes: [],
   networkLinks: [],
-  history: [
-    {
-      // TODO DAU : remove this dummy entry
-      raftEvent: {
-        type: "network",
-        networkRequest: {
-          fromNodeId: "1",
-          toNodeId: "2",
-          payload: "yolo",
-        },
-      },
-    },
-  ],
+  history: [],
 };
 
 const store = createStore({

@@ -1,4 +1,4 @@
-import { NetworkRequest } from "@/domain/network/NetworkManager";
+import { NetworkRequest } from "@/domain/network/NetworkRequest";
 
 export interface NetworkEvent {
   type: "network";
@@ -6,46 +6,25 @@ export interface NetworkEvent {
 }
 
 export class NetworkRequestEventBuilder {
-  private fromNodeId?: string;
-  private toNodeId?: string;
-  private payload?: unknown;
+  private networkRequest?: NetworkRequest;
 
   static aNetworkRequestEvent(): NetworkRequestEventBuilder {
     return new NetworkRequestEventBuilder();
   }
 
-  withFromNodeId(nodeId: string): this {
-    this.fromNodeId = nodeId;
-    return this;
-  }
-
-  withToNodeId(nodeId: string): this {
-    this.toNodeId = nodeId;
-    return this;
-  }
-
-  withPayload(payload: unknown): this {
-    this.payload = payload;
+  withNetworkRequest(networkRequest: NetworkRequest): this {
+    this.networkRequest = networkRequest;
     return this;
   }
 
   build(): NetworkEvent {
-    if (!this.fromNodeId) {
-      throw new Error("Cannot build a network event without fromNodeId");
+    if (!this.networkRequest) {
+      throw new Error("Cannot build a network event without networkRequest");
     }
-    if (!this.toNodeId) {
-      throw new Error("Cannot build a network event without toNodeId");
-    }
-    if (!this.payload) {
-      throw new Error("Cannot build a network event without payload");
-    }
+
     return {
       type: "network",
-      networkRequest: {
-        fromNodeId: this.fromNodeId,
-        toNodeId: this.toNodeId,
-        payload: this.payload,
-      },
+      networkRequest: this.networkRequest,
     };
   }
 }

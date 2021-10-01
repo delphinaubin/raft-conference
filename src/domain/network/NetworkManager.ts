@@ -1,38 +1,36 @@
 import { EventBus } from "@/domain/event/EventBus";
 import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
-
-export interface NetworkRequest<T = unknown> {
-  fromNodeId: string;
-  toNodeId: string;
-  payload: T;
-}
+import { NetworkRequest } from "@/domain/network/NetworkRequest";
 
 export class NetworkManager {
   constructor(private readonly eventBus: EventBus) {}
 
   private disabledConnections = new Set<string>();
 
-  disableConnection(fromNodeId: string, toNodeId: string): void {
-    this.disabledConnections.add(`${fromNodeId}-->${toNodeId}`);
+  disableConnection(senderNodeId: string, receiverNodeId: string): void {
+    this.disabledConnections.add(`${senderNodeId}-->${receiverNodeId}`);
   }
 
-  enableConnection(fromNodeId: string, toNodeId: string): void {
-    this.disabledConnections.delete(`${fromNodeId}-->${toNodeId}`);
+  enableConnection(senderNodeId: string, receiverNodeId: string): void {
+    this.disabledConnections.delete(`${senderNodeId}-->${receiverNodeId}`);
   }
 
   async sendRequest(request: NetworkRequest): Promise<void> {
-    if (this.isConnectionEnabled(request.fromNodeId, request.toNodeId)) {
+    if (
+      this.isConnectionEnabled(request.senderNodeId, request.receiverNodeId)
+    ) {
       await this.eventBus.emitEvent(
         NetworkRequestEventBuilder.aNetworkRequestEvent()
-          .withFromNodeId(request.fromNodeId)
-          .withToNodeId(request.toNodeId)
-          .withPayload(request.payload)
+          .withNetworkRequest(request)
           .build()
       );
     }
   }
 
-  private isConnectionEnabled(fromNodeId: string, toNodeId: string): boolean {
-    return !this.disabledConnections.has(`${fromNodeId}-->${toNodeId}`);
+  private isConnectionEnabled(
+    senderNodeId: string,
+    receiverNodeId: string
+  ): boolean {
+    return !this.disabledConnections.has(`${senderNodeId}-->${receiverNodeId}`);
   }
 }

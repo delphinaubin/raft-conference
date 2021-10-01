@@ -4,6 +4,9 @@ export class FollowerState extends NodeAlgorithmState {
   name = "follower" as const;
 
   async onEnterInState(): Promise<void> {
-    await this.changeState("leader");
+    await super.onEnterInState();
+    this.startTimer(2_000).then(() => {
+      this.changeState("candidate");
+    });
   }
 }
