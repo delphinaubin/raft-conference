@@ -35,5 +35,13 @@ export interface LogResponse extends AbstractNetworkRequest {
   success: boolean;
 }
 
-// TODO DAU : add | OtherRequest when adding it
-export type NetworkRequest = VoteRequest | VoteResponse | LogRequest;
+export interface BroadcastRequest extends AbstractNetworkRequest {
+  type: "broadcast-request";
+  log: number;
+}
+
+export type NetworkRequest =
+  | VoteRequest
+  | VoteResponse
+  | LogRequest
+  | BroadcastRequest;
