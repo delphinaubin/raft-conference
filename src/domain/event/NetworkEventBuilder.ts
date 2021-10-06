@@ -1,0 +1,30 @@
+import { NetworkRequest } from "@/domain/network/NetworkRequest";
+
+export interface NetworkEvent {
+  type: "network";
+  networkRequest: NetworkRequest;
+}
+
+export class NetworkRequestEventBuilder {
+  private networkRequest?: NetworkRequest;
+
+  static aNetworkRequestEvent(): NetworkRequestEventBuilder {
+    return new NetworkRequestEventBuilder();
+  }
+
+  withNetworkRequest(networkRequest: NetworkRequest): this {
+    this.networkRequest = networkRequest;
+    return this;
+  }
+
+  build(): NetworkEvent {
+    if (!this.networkRequest) {
+      throw new Error("Cannot build a network event without networkRequest");
+    }
+
+    return {
+      type: "network",
+      networkRequest: this.networkRequest,
+    };
+  }
+}

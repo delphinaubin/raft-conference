@@ -1,6 +1,6 @@
 <template>
   <h1>Raft algorithm demo</h1>
-  <button @click="resetSelection">Reset selection</button>
+  <a-button type="primary" @click="resetSelection">Reset selection</a-button>
   <NodeVisualizer
     :nodes="nodes"
     :networkLinks="networkLinks"
@@ -9,6 +9,7 @@
     @selected-nodes-change="selectedNodesChange"
     @selected-network-links-change="selectedNetwotkLinksChange"
   ></NodeVisualizer>
+  <EventHistory :historyEntries="historyEntries" :nodeNamesById="nodeNamesById" />
 </template>
 
 <script lang="ts">
@@ -16,9 +17,12 @@ import { Options, Vue } from "vue-class-component";
 import NodeVisualizer from "./components/NodeVisualizer/NodeVisualizer.vue";
 import { RaftNode } from "@/domain/RaftNode";
 import { NetworkLink } from "@/domain/NetworkLink";
+import store, { HistoryEntry } from "@/store";
+import EventHistory from "@/components/EventHistory/EventHistory.vue";
 
 @Options({
   components: {
+    EventHistory,
     NodeVisualizer,
   },
 })
@@ -26,23 +30,21 @@ export default class App extends Vue {
   selectedNodes: RaftNode[] = [];
   selectedNetworkLinks: NetworkLink[] = [];
 
-  nodes: RaftNode[] = [
-    {
-      id: "1",
-      name: "Node 1",
-      state: "leader",
-    },
-    {
-      id: "2",
-      name: "Node 2",
-      state: "follower",
-    },
-    {
-      id: "3",
-      name: "Node 3",
-      state: "follower",
-    },
-  ];
+  get nodes(): RaftNode[] {
+    return store.state.nodes;
+  }
+
+  get networkLinks(): NetworkLink[] {
+    return store.state.networkLinks;
+  }
+
+  get historyEntries(): HistoryEntry[] {
+    return store.state.history;
+  }
+
+  get nodeNamesById(): Map<string, string> {
+    return new Map(store.state.nodes.map((node) => [node.id, node.name]));
+  }
 
   resetSelection(): void {
     this.selectedNodes = [];
@@ -56,32 +58,14 @@ export default class App extends Vue {
   selectedNetwotkLinksChange(selectedNetworkLinks: NetworkLink[]): void {
     this.selectedNetworkLinks = selectedNetworkLinks;
   }
-
-  networkLinks: NetworkLink[] = [
-    {
-      fromNodeId: "1",
-      toNodeId: "2",
-      status: "connected",
-    },
-    {
-      fromNodeId: "2",
-      toNodeId: "3",
-      status: "connected",
-    },
-    {
-      fromNodeId: "1",
-      toNodeId: "3",
-      status: "connected",
-    },
-  ];
+  created() {
+    store.dispatch("init");
+  }
 }
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
