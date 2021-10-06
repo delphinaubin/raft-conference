@@ -17,6 +17,9 @@ export const nodesToCreate: RaftNode[] = [
 const INITIAL_NODE_MEMORY_STATE = () => ({
   term: 0,
   votesReceived: [],
+  sentLength: {},
+  ackedLength: {},
+  log: [],
 });
 
 export const eventBus = new EventBus();
