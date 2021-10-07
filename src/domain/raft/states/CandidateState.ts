@@ -1,6 +1,9 @@
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
 import { VoteRequestBuilder } from "@/domain/network/VoteRequestBuilder";
-import { VoteResponse } from "@/domain/network/NetworkRequest";
+import {
+  BroadcastRequest,
+  VoteResponse,
+} from "@/domain/network/NetworkRequest";
 
 export class CandidateState extends NodeAlgorithmState {
   name = "candidate" as const;
@@ -46,5 +49,10 @@ export class CandidateState extends NodeAlgorithmState {
         await this.changeState("leader");
       }
     }
+  }
+
+  onBroadcastRequest(request: BroadcastRequest): Promise<void> {
+    // leader is unknown at this time, so do nothing
+    return Promise.resolve(undefined);
   }
 }

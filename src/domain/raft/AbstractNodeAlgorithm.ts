@@ -1,16 +1,9 @@
 import { RaftNodeState } from "@/domain/RaftNode";
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
 import { EventBus } from "@/domain/event/EventBus";
+import { LogEntry } from "@/domain/log/LogEntry";
 
 type NodeAlgorithmStates = Record<RaftNodeState, NodeAlgorithmState>;
-
-export interface LogEntry {
-  // in practice this could be anything, but we keep it simple for the example
-  payload: number;
-
-  // term at which the entry was added to the log
-  term: number;
-}
 
 export interface NodeMemoryState {
   term: number;
@@ -19,6 +12,7 @@ export interface NodeMemoryState {
   leader?: string;
   sentLength: { [nodeId: string]: number };
   ackedLength: { [nodeId: string]: number };
+  commitLength: number;
   log: LogEntry[];
 }
 
@@ -32,6 +26,11 @@ export abstract class AbstractNodeAlgorithm {
     // TODO this is reported as unused, but why?
     private readonly allNodesIds: string[]
   ) {
+    allNodesIds.forEach((node) => {
+      nodeMemoryState.sentLength[node] = 0;
+      nodeMemoryState.ackedLength[node] = 0;
+    });
+
     eventBus.subscribe(async (event) => {
       switch (event.type) {
         case "change-state": {
