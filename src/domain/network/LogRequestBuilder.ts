@@ -1,7 +1,8 @@
-import { LogRequest, VoteRequest } from "@/domain/network/NetworkRequest";
+import { LogRequest } from "@/domain/network/NetworkRequest";
 import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
 import { LogEntry } from "@/domain/log/LogEntry";
 
+// TODO leaderId = senderId so it's not necessary and should be removed
 export class LogRequestBuilder extends NetworkRequestBuilder {
   private term?: number;
   private leaderId?: string;
