@@ -54,7 +54,7 @@ export default class App extends Vue {
   }
 
   get historyEntries(): HistoryEntry[] {
-    return store.state.history;
+    return store.getters.sortedHistory;
   }
 
   get nodeNamesById(): Map<string, string> {

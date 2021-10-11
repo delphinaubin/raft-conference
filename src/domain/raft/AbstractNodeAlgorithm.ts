@@ -26,26 +26,24 @@ export abstract class AbstractNodeAlgorithm {
     // TODO this is reported as unused, but why?
     private readonly allNodesIds: string[]
   ) {
-    allNodesIds.forEach((node) => {
-      nodeMemoryState.sentLength[node] = 0;
-      nodeMemoryState.ackedLength[node] = 0;
+    allNodesIds.forEach((nodeId) => {
+      nodeMemoryState.sentLength[nodeId] = 0;
+      nodeMemoryState.ackedLength[nodeId] = 0;
     });
 
-    eventBus.subscribe(async (event) => {
+    eventBus.subscribe(({ event }) => {
       switch (event.type) {
         case "change-state": {
           if (event.nodeId === this.id) {
             if (event.toState !== this.currentState?.name) {
-              await this.goToState(event.toState);
+              this.goToState(event.toState);
             }
           }
           break;
         }
         case "network": {
           if (event.networkRequest.receiverNodeId === this.id) {
-            await this.currentState.onReceiveNetworkRequest(
-              event.networkRequest
-            );
+            this.currentState.onReceiveNetworkRequest(event.networkRequest);
           }
           break;
         }
@@ -55,9 +53,9 @@ export abstract class AbstractNodeAlgorithm {
 
   abstract getInitialState(): RaftNodeState;
 
-  async goToState(newState: RaftNodeState): Promise<void> {
-    this.currentState && (await this.currentState.onLeaveState());
+  goToState(newState: RaftNodeState): void {
+    this.currentState && this.currentState.onLeaveState();
     this.currentState = this.allStates[newState];
-    await this.currentState.onEnterInState();
+    this.currentState.onEnterInState();
   }
 }

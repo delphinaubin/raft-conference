@@ -11,14 +11,14 @@ export class TimerManager {
 
   private readonly runningTimers: Map<number, Timer> = new Map();
 
-  startTimer(duration: number, starterNodeId: string): number {
+  startTimer(duration: number, starterNodeId: string, label: string): number {
     const timerId = setTimeout(() => {
       this.runningTimers.delete(timerId);
-      console.log("TIMER ENDED", { starterNodeId, duration });
       this.eventBus.emitEvent(
         TimerEventBuilder.aTimerEvent()
           .startedByNodeId(starterNodeId)
           .withTimerId(timerId)
+          .withLabel(label)
           .withStatus("ended")
           .build()
       );
@@ -31,6 +31,7 @@ export class TimerManager {
       TimerEventBuilder.aTimerEvent()
         .startedByNodeId(starterNodeId)
         .withTimerId(timerId)
+        .withLabel(label)
         .withStatus("started")
         .build()
     );

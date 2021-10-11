@@ -5,12 +5,14 @@ export interface TimerEvent {
   timerId: number;
   status: TimerStatus;
   starterNodeId: string;
+  label: string;
 }
 
 export class TimerEventBuilder {
   private timerId?: number;
   private status?: TimerStatus;
   private starterNodeId?: string;
+  private label?: string;
 
   static aTimerEvent(): TimerEventBuilder {
     return new TimerEventBuilder();
@@ -31,6 +33,11 @@ export class TimerEventBuilder {
     return this;
   }
 
+  withLabel(label: string): this {
+    this.label = label;
+    return this;
+  }
+
   build(): TimerEvent {
     if (!this.timerId) {
       throw new Error("Cannot build a timer event without timerId");
@@ -41,7 +48,11 @@ export class TimerEventBuilder {
     }
 
     if (!this.starterNodeId) {
-      throw new Error("Cannot build a timer event without startedNodeId");
+      throw new Error("Cannot build a timer event without starterNodeId");
+    }
+
+    if (!this.label) {
+      throw new Error("Cannot build a timer event without label");
     }
 
     return {
@@ -49,6 +60,7 @@ export class TimerEventBuilder {
       timerId: this.timerId,
       status: this.status,
       starterNodeId: this.starterNodeId,
+      label: this.label,
     };
   }
 }

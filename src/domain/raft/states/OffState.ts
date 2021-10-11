@@ -1,7 +1,20 @@
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
+import { NetworkRequest } from "@/domain/network/NetworkRequest";
 
 export class OffState extends NodeAlgorithmState {
   name = "off" as const;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onEnterInState(): void {}
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onLeaveState(): void {}
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onReceiveNetworkRequest(): void {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+  onVoteRequest(): void {}
+
   onBroadcastRequest(): Promise<void> {
     return Promise.resolve(undefined);
   }

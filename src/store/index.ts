@@ -10,6 +10,7 @@ import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
 
 export interface HistoryEntry {
   raftEvent: RaftEvent;
+  eventId: number;
 }
 
 export interface State {
@@ -45,30 +46,43 @@ const store = createStore({
         }
       });
     },
-    addEventToHistory(state, event: RaftEvent) {
+    addEventToHistory(
+      state,
+      { event, eventId }: { event: RaftEvent; eventId: number }
+    ) {
       state.history.push({
         raftEvent: event,
+        eventId,
       });
     },
     setSelectedNode(state, selectedNode: RaftNode | null) {
       state.selectedNode = selectedNode || null;
     },
   },
+  getters: {
+    sortedHistory(state) {
+      return [...state.history].sort(
+        (entryA, entryB) => entryA.eventId - entryB.eventId
+      );
+    },
+  },
   actions: {
-    async init({ commit }): Promise<void> {
+    init({ commit }): void {
       commit("setNodes", nodesToCreate);
       commit("setNetworkLinks", getNetworkLinksBetweenNodes(nodesToCreate));
-      await Array.from(nodes.values()).reduce(async (lastPromise, node) => {
-        await lastPromise;
-        await eventBus.emitEvent(
+      Array.from(nodes.values()).forEach((node) => {
+        eventBus.emitEvent(
           ChangeStateEventBuilder.aChangeStateEvent()
             .forNodeId(node.id)
             .toState(node.getInitialState())
             .build()
         );
-      }, Promise.resolve());
+      });
     },
-    eventBusEvent({ commit }, event: RaftEvent): void {
+    eventBusEvent(
+      { commit },
+      { event, eventId }: { event: RaftEvent; eventId: number }
+    ): void {
       switch (event.type) {
         case "change-state": {
           commit("setNodeState", {
@@ -77,12 +91,12 @@ const store = createStore({
           });
         }
       }
-      commit("addEventToHistory", event);
+      commit("addEventToHistory", { event, eventId });
     },
     selectedNodeChange({ commit }, selectedNode: RaftNode | null) {
       commit("setSelectedNode", selectedNode);
     },
-    async switchNodeState(
+    switchNodeState(
       _,
       { nodeId, newNodeState }: { nodeId: string; newNodeState: "off" | "on" }
     ) {
@@ -99,18 +113,18 @@ const store = createStore({
         stateToGoTo = nodeToSwitchOn.getInitialState();
       }
 
-      await eventBus.emitEvent(
+      eventBus.emitEvent(
         ChangeStateEventBuilder.aChangeStateEvent()
           .forNodeId(nodeId)
           .toState(stateToGoTo)
           .build()
       );
     },
-    async sendLogToNode(
+    sendLogToNode(
       _,
       { nodeId, logToSend }: { nodeId: string; logToSend: number }
     ) {
-      await eventBus.emitEvent(
+      eventBus.emitEvent(
         NetworkRequestEventBuilder.aNetworkRequestEvent()
           .withNetworkRequest(
             BroadcastRequestBuilder.aBroadcastRequest()
@@ -125,9 +139,9 @@ const store = createStore({
   modules: {},
 });
 
-eventBus.subscribe(async (event) => {
+eventBus.subscribe((event) => {
   console.log(event);
-  await store.dispatch("eventBusEvent", event);
+  store.dispatch("eventBusEvent", event);
 });
 
 export default store;

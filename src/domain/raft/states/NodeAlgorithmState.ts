@@ -28,10 +28,10 @@ export abstract class NodeAlgorithmState {
 
   abstract name: RaftNodeState;
 
-  abstract onBroadcastRequest(request: BroadcastRequest): Promise<void>;
+  abstract onBroadcastRequest(request: BroadcastRequest): void;
 
-  async onEnterInState(): Promise<void> {
-    this.eventBusSubscriberId = this.eventBus.subscribe((event) => {
+  onEnterInState(): void {
+    this.eventBusSubscriberId = this.eventBus.subscribe(({ event }) => {
       if (
         event.type === "timer" &&
         event.status === "ended" &&
@@ -47,7 +47,7 @@ export abstract class NodeAlgorithmState {
     });
   }
 
-  async onLeaveState(): Promise<void> {
+  onLeaveState(): void {
     if (this.eventBusSubscriberId) {
       this.eventBus.unSubscribe(this.eventBusSubscriberId);
     }
@@ -58,22 +58,22 @@ export abstract class NodeAlgorithmState {
     this.runningTimers.clear();
   }
 
-  async onReceiveNetworkRequest(_request: NetworkRequest): Promise<void> {
+  onReceiveNetworkRequest(_request: NetworkRequest): void {
     if (_request.type == "vote-request") {
-      await this.onVoteRequest(_request);
+      this.onVoteRequest(_request);
     } else if (_request.type == "vote-response") {
-      await this.onVoteResponse(_request);
+      this.onVoteResponse(_request);
     } else if (_request.type == "log-request") {
-      await this.onLogRequest(_request);
+      this.onLogRequest(_request);
     } else if (_request.type == "log-response") {
-      await this.onLogResponse(_request);
+      this.onLogResponse(_request);
     } else if (_request.type == "broadcast-request") {
-      await this.onBroadcastRequest(_request);
+      this.onBroadcastRequest(_request);
     }
   }
 
-  protected async changeState(newState: RaftNodeState): Promise<void> {
-    await this.eventBus.emitEvent(
+  protected changeState(newState: RaftNodeState): void {
+    this.eventBus.emitEvent(
       ChangeStateEventBuilder.aChangeStateEvent()
         .forNodeId(this.nodeId)
         .toState(newState)
@@ -84,22 +84,22 @@ export abstract class NodeAlgorithmState {
   // TODO return the timerID
   // The timerID can be used by state algorithm to cancel running timer
   // (for instance if a node is elected leader, it cancels it's election timer
-  protected async startTimer(duration: number): Promise<void> {
-    const timerId = this.timerManager.startTimer(duration, this.nodeId);
+  protected startTimer(duration: number, label: string): Promise<void> {
+    const timerId = this.timerManager.startTimer(duration, this.nodeId, label);
     return new Promise<void>((resolve) => {
       this.runningTimers.set(timerId, resolve);
     });
   }
 
-  protected sendNetworkRequest(request: NetworkRequest): Promise<void> {
-    return this.eventBus.emitEvent(
+  protected sendNetworkRequest(request: NetworkRequest): void {
+    this.eventBus.emitEvent(
       NetworkRequestEventBuilder.aNetworkRequestEvent()
         .withNetworkRequest(request)
         .build()
     );
   }
 
-  async onVoteRequest(request: VoteRequest): Promise<void> {
+  onVoteRequest(request: VoteRequest): void {
     // message sent by this very node can safely be ignored
     if (request.senderNodeId != this.nodeId) {
       // TODO add logOk check
@@ -111,11 +111,16 @@ export abstract class NodeAlgorithmState {
           (this.nodeMemoryState.votedFor == request.senderNodeId ||
             this.nodeMemoryState.votedFor == null));
 
-      if (termOk) {
+      // TODO DAU : refactor
+      if (
+        termOk &&
+        this.name !== "leader" &&
+        this.nodeMemoryState.votedFor === undefined
+      ) {
         this.nodeMemoryState.term = request.term;
         this.nodeMemoryState.votedFor = request.senderNodeId;
         // TODO DAU : check the voterId
-        await this.sendNetworkRequest(
+        this.sendNetworkRequest(
           VoteResponseBuilder.aVoteResponse()
             .withSenderNodeId(this.nodeId)
             .withVoterId(this.nodeId)
@@ -126,7 +131,7 @@ export abstract class NodeAlgorithmState {
         );
       } else {
         // TODO DAU : check the voterId
-        await this.sendNetworkRequest(
+        this.sendNetworkRequest(
           VoteResponseBuilder.aVoteResponse()
             .withSenderNodeId(this.nodeId)
             .withVoterId(this.nodeId)
@@ -143,15 +148,15 @@ export abstract class NodeAlgorithmState {
   // i.e. even candidates nodes should send back log response
   // in case of the node is with an outdated term
 
-  protected async onVoteResponse(response: VoteResponse): Promise<void> {
-    await this.adjustTermIfNewer(response.term);
+  protected onVoteResponse(response: VoteResponse): void {
+    this.adjustTermIfNewer(response.term);
   }
 
-  protected async onLogRequest(request: LogRequest): Promise<void> {
-    await this.adjustTermIfNewer(request.term);
+  protected onLogRequest(request: LogRequest): void {
+    this.adjustTermIfNewer(request.term);
   }
 
-  protected async onLogResponse(response: LogResponse): Promise<void> {
+  protected onLogResponse(response: LogResponse): void {
     // Do nothing by default, only leader is interrested by this network event
   }
 
@@ -168,11 +173,11 @@ export abstract class NodeAlgorithmState {
       this.nodeMemoryState.log.length;
   }
 
-  private async adjustTermIfNewer(term: number): Promise<void> {
+  private adjustTermIfNewer(term: number): void {
     if (term > this.nodeMemoryState.term) {
       this.nodeMemoryState.term = term;
       this.nodeMemoryState.votedFor = undefined;
-      await this.changeState("follower");
+      this.changeState("follower");
     }
   }
 }

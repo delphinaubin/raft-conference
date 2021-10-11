@@ -7,8 +7,8 @@ export class LeaderState extends NodeAlgorithmState {
 
   private readonly replicateLogTimeout = 1_000;
 
-  async onEnterInState(): Promise<void> {
-    await super.onEnterInState();
+  onEnterInState(): void {
+    super.onEnterInState();
     // TODO DAU : voir comment afficher le memory dans l'IHM
     // TODO Cancel election timer
     // For this we would need at minimum to store the timer ID and purpose when we start a timer
@@ -20,30 +20,33 @@ export class LeaderState extends NodeAlgorithmState {
         this.nodeMemoryState.log.length;
       this.nodeMemoryState.ackedLength[follower] = 0;
     });
-    await this.startTimer(this.replicateLogTimeout);
-    await this.onReplicateLogTimeout();
-  }
-
-  private async onReplicateLogTimeout(): Promise<void> {
-    await Promise.all(
-      this.allNodesIds
-        .filter((node) => node != this.nodeId)
-        .map((follower) => this.replicateLog(follower))
+    this.startTimer(this.replicateLogTimeout, "Replicate log interval").then(
+      () => {
+        this.onReplicateLogTimeout();
+      }
     );
-
-    this.startTimer(this.replicateLogTimeout).then(() => {
-      this.onReplicateLogTimeout();
-    });
   }
 
-  private async replicateLog(follower: string): Promise<void> {
+  private onReplicateLogTimeout(): void {
+    this.allNodesIds
+      .filter((node) => node != this.nodeId)
+      .forEach((follower) => this.replicateLog(follower));
+
+    this.startTimer(this.replicateLogTimeout, "Replicate log interval").then(
+      () => {
+        this.onReplicateLogTimeout();
+      }
+    );
+  }
+
+  private replicateLog(follower: string): void {
     const i = this.nodeMemoryState.sentLength[follower];
     const entries = this.nodeMemoryState.log.slice(i);
     let prevLogTerm = 0;
     if (i > 0) {
       prevLogTerm = this.nodeMemoryState.log[i - 1].term;
     }
-    await this.sendNetworkRequest(
+    this.sendNetworkRequest(
       LogRequestBuilder.aLogRequest()
         .withSenderNodeId(this.nodeId)
         .withReceiverNodeId(follower)
@@ -57,7 +60,7 @@ export class LeaderState extends NodeAlgorithmState {
     );
   }
 
-  protected async onLogResponse(response: LogResponse): Promise<void> {
+  protected onLogResponse(response: LogResponse): void {
     if (response.term == this.nodeMemoryState.term) {
       if (
         response.success &&
@@ -73,11 +76,11 @@ export class LeaderState extends NodeAlgorithmState {
     } else if (response.term > this.nodeMemoryState.term) {
       this.nodeMemoryState.term = response.term;
       this.nodeMemoryState.votedFor = undefined;
-      await this.changeState("follower");
+      this.changeState("follower");
     }
   }
 
-  async onBroadcastRequest(request: BroadcastRequest): Promise<void> {
+  onBroadcastRequest(request: BroadcastRequest): void {
     this.appendRecordToLog(request);
   }
 

@@ -15,11 +15,11 @@ export class NodeToNodeNetworkManager {
     this.disabledConnections.delete(`${senderNodeId}-->${receiverNodeId}`);
   }
 
-  async sendRequest(request: NodeToNodeRequest): Promise<void> {
+  sendRequest(request: NodeToNodeRequest): void {
     if (
       this.isConnectionEnabled(request.senderNodeId, request.receiverNodeId)
     ) {
-      await this.eventBus.emitEvent(
+      this.eventBus.emitEvent(
         NetworkRequestEventBuilder.aNetworkRequestEvent()
           .withNetworkRequest(request)
           .build()

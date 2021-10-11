@@ -7,16 +7,19 @@ import { LogResponseBuilder } from "@/domain/network/LogResponseBuilder";
 export class FollowerState extends NodeAlgorithmState {
   name = "follower" as const;
 
-  async onEnterInState(): Promise<void> {
-    await super.onEnterInState();
-    this.startTimer(2_000).then(() => {
+  onEnterInState(): void {
+    super.onEnterInState();
+    this.startTimer(
+      2_000 + ~~(Math.random() * 2000),
+      "No leader ack timeout"
+    ).then(() => {
       this.changeState("candidate");
     });
   }
 
-  async onBroadcastRequest(request: BroadcastRequest): Promise<void> {
+  onBroadcastRequest(request: BroadcastRequest): void {
     if (this.nodeMemoryState.leader != undefined) {
-      await this.sendNetworkRequest(
+      this.sendNetworkRequest(
         BroadcastRequestBuilder.aBroadcastRequest()
           .withReceiverNodeId(this.nodeMemoryState.leader)
           .withLog(request.log)
@@ -25,8 +28,8 @@ export class FollowerState extends NodeAlgorithmState {
     }
   }
 
-  protected async onLogRequest(request: LogRequest): Promise<void> {
-    await super.onLogRequest(request);
+  protected onLogRequest(request: LogRequest): void {
+    super.onLogRequest(request);
     if (request.term >= this.nodeMemoryState.term) {
       this.nodeMemoryState.leader = request.leaderId;
       // TODO cancel election timer
@@ -45,7 +48,7 @@ export class FollowerState extends NodeAlgorithmState {
         request.entries
       );
       const ack = request.logLength + request.entries.length;
-      await this.sendNetworkRequest(
+      this.sendNetworkRequest(
         LogResponseBuilder.aLogResponse()
           .withSenderNodeId(this.nodeId)
           .withReceiverNodeId(request.senderNodeId)
@@ -56,7 +59,7 @@ export class FollowerState extends NodeAlgorithmState {
           .build()
       );
     } else {
-      await this.sendNetworkRequest(
+      this.sendNetworkRequest(
         LogResponseBuilder.aLogResponse()
           .withSenderNodeId(this.nodeId)
           .withReceiverNodeId(request.senderNodeId)

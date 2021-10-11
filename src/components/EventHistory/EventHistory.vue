@@ -21,7 +21,7 @@
             :style="{ color: entry.color }"
           />
         </template>
-        {{ entry.label }}
+        {{ entry.id }}  {{ entry.label }}
       </a-timeline-item>
     </a-timeline>
   </div>
@@ -58,12 +58,14 @@ export default class EventHistory extends Vue {
     label: string;
     type: string;
     color: string;
+    id: number;
   }[] {
     return this.historyEntries.map((h) => {
       const event = h.raftEvent;
       switch (event.type) {
         case "change-state": {
           return {
+            id: h.eventId,
             type: "change-state",
             label: `${this.nodeNamesById.get(event.nodeId)} becomes ${
               event.toState
@@ -76,7 +78,23 @@ export default class EventHistory extends Vue {
             ? this.nodeNamesById.get(event.networkRequest.senderNodeId)
             : "User";
 
+          if (event.networkRequest.type === "vote-response") {
+            return {
+              id: h.eventId,
+              type: "network",
+              label: `${senderLabel} sent ${
+                event.networkRequest.type
+              } to ${this.nodeNamesById.get(
+                event.networkRequest.receiverNodeId
+              )} to ${
+                event.networkRequest.granted ? "grant it" : "not grant it"
+              } to leader`,
+              color: "limegreen",
+            };
+          }
+
           return {
+            id: h.eventId,
             type: "network",
             label: `${senderLabel} sent ${
               event.networkRequest.type
@@ -94,10 +112,11 @@ export default class EventHistory extends Vue {
           };
 
           return {
+            id: h.eventId,
             type: "timer",
             label: `${this.nodeNamesById.get(event.starterNodeId)} ${
               statusToVerb[event.status]
-            }`,
+            } (${event.label})`,
             color: "black",
           };
         }
