@@ -26,10 +26,10 @@ export class VoteRequestBuilder extends NodeToNodeNetworkRequestBuilder {
     if (!this.term) {
       throw new Error("Cannot build a vote request without term");
     }
-    if (!this.logLength) {
+    if (this.logLength == undefined) {
       throw new Error("Cannot build a vote request without logLength");
     }
-    if (!this.logTerm) {
+    if (this.logTerm == undefined) {
       throw new Error("Cannot build a vote request without logTerm");
     }
     return {

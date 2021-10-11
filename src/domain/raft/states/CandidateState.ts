@@ -23,6 +23,7 @@ export class CandidateState extends NodeAlgorithmState {
       this.onElectionTimeout();
     });
 
+    const lastLogTerm = this.lastLogTerm();
     this.allNodesIds
       .filter((nodeId) => nodeId !== this.nodeId)
       .forEach((otherNodeId) =>
@@ -32,7 +33,7 @@ export class CandidateState extends NodeAlgorithmState {
             .withReceiverNodeId(otherNodeId)
             .withTerm(this.nodeMemoryState.term)
             .withLogLength(this.nodeMemoryState.log.length)
-            .withLogTerm(this.lastLogTerm())
+            .withLogTerm(lastLogTerm)
             .build()
         )
       );
