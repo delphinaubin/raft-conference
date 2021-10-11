@@ -1,5 +1,5 @@
-import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
 import { BroadcastRequest } from "@/domain/network/NetworkRequest";
+import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
 
 export class BroadcastRequestBuilder extends NetworkRequestBuilder {
   private log?: number;

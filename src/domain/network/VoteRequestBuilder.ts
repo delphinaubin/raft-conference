@@ -1,7 +1,7 @@
 import { VoteRequest } from "@/domain/network/NetworkRequest";
-import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
+import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
 
-export class VoteRequestBuilder extends NetworkRequestBuilder {
+export class VoteRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;
 
   static aVoteRequest(): VoteRequestBuilder {

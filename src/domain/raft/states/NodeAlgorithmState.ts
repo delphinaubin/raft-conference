@@ -98,23 +98,28 @@ export abstract class NodeAlgorithmState {
       if (termOk) {
         this.nodeMemoryState.term = request.term;
         this.nodeMemoryState.votedFor = request.senderNodeId;
+        // TODO DAU : check the voterId
         const promise = this.sendNetworkRequest(
           VoteResponseBuilder.aVoteResponse()
             .withSenderNodeId(this.nodeId)
+            .withVoterId(this.nodeId)
+            .withGranted(true)
             .withReceiverNodeId(request.senderNodeId)
             .withTerm(this.nodeMemoryState.term)
-            .withGranted(true)
             .build()
         );
 
         await promise;
         if (this.name != "candidate") {
+          // TODO DAU : implement it in all substates which are not candidate
           await this.changeState("candidate");
         }
       } else {
+        // TODO DAU : check the voterId
         const promise = this.sendNetworkRequest(
           VoteResponseBuilder.aVoteResponse()
             .withSenderNodeId(this.nodeId)
+            .withVoterId(this.nodeId)
             .withReceiverNodeId(request.senderNodeId)
             .withTerm(this.nodeMemoryState.term)
             .withGranted(false)

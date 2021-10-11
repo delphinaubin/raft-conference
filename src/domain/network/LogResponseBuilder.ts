@@ -1,7 +1,7 @@
 import { LogResponse, VoteRequest } from "@/domain/network/NetworkRequest";
-import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
+import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
 
-export class LogResponseBuilder extends NetworkRequestBuilder {
+export class LogResponseBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;
   private ack?: number;
   private success?: boolean;

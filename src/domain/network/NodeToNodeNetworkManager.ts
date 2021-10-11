@@ -1,8 +1,8 @@
 import { EventBus } from "@/domain/event/EventBus";
 import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
-import { NetworkRequest } from "@/domain/network/NetworkRequest";
+import { NodeToNodeRequest } from "@/domain/network/NetworkRequest";
 
-export class NetworkManager {
+export class NodeToNodeNetworkManager {
   constructor(private readonly eventBus: EventBus) {}
 
   private disabledConnections = new Set<string>();
@@ -15,7 +15,7 @@ export class NetworkManager {
     this.disabledConnections.delete(`${senderNodeId}-->${receiverNodeId}`);
   }
 
-  async sendRequest(request: NetworkRequest): Promise<void> {
+  async sendRequest(request: NodeToNodeRequest): Promise<void> {
     if (
       this.isConnectionEnabled(request.senderNodeId, request.receiverNodeId)
     ) {

@@ -37,6 +37,7 @@ import {
 } from "@ant-design/icons-vue";
 import { NODE_STATE_STYLE } from "@/components/NodeVisualizer/nodeStateStyle";
 import { TimerStatus } from "@/domain/event/TimerEventBuilder";
+import { isRequestIsNodeToNodeRequest } from "@/domain/network/NetworkRequest";
 
 @Options({
   components: {
@@ -71,11 +72,15 @@ export default class EventHistory extends Vue {
           };
         }
         case "network": {
+          const senderLabel = isRequestIsNodeToNodeRequest(event.networkRequest)
+            ? this.nodeNamesById.get(event.networkRequest.senderNodeId)
+            : "User";
+
           return {
             type: "network",
-            label: `${this.nodeNamesById.get(
-              event.networkRequest.senderNodeId
-            )} sent ${event.networkRequest.type} to ${this.nodeNamesById.get(
+            label: `${senderLabel} sent ${
+              event.networkRequest.type
+            } to ${this.nodeNamesById.get(
               event.networkRequest.receiverNodeId
             )}`,
             color: "limegreen",

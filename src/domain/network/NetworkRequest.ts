@@ -1,23 +1,27 @@
 import { LogEntry } from "@/domain/log/LogEntry";
 
 export interface AbstractNetworkRequest {
-  senderNodeId: string;
   receiverNodeId: string;
 }
 
-export interface VoteRequest extends AbstractNetworkRequest {
+export interface AbstractNodeToNodeNetworkRequest
+  extends AbstractNetworkRequest {
+  senderNodeId: string;
+}
+
+export interface VoteRequest extends AbstractNodeToNodeNetworkRequest {
   type: "vote-request";
   term: number;
 }
 
-export interface VoteResponse extends AbstractNetworkRequest {
+export interface VoteResponse extends AbstractNodeToNodeNetworkRequest {
   type: "vote-response";
   term: number;
   voterId: string;
   granted: boolean;
 }
 
-export interface LogRequest extends AbstractNetworkRequest {
+export interface LogRequest extends AbstractNodeToNodeNetworkRequest {
   type: "log-request";
   leaderId: string;
   term: number;
@@ -27,7 +31,7 @@ export interface LogRequest extends AbstractNetworkRequest {
   entries: LogEntry[];
 }
 
-export interface LogResponse extends AbstractNetworkRequest {
+export interface LogResponse extends AbstractNodeToNodeNetworkRequest {
   type: "log-response";
   follower: string;
   term: number;
@@ -40,8 +44,12 @@ export interface BroadcastRequest extends AbstractNetworkRequest {
   log: number;
 }
 
-export type NetworkRequest =
-  | VoteRequest
-  | VoteResponse
-  | LogRequest
-  | BroadcastRequest;
+export type NodeToNodeRequest = VoteRequest | VoteResponse | LogRequest;
+
+export type NetworkRequest = NodeToNodeRequest | BroadcastRequest;
+
+export function isRequestIsNodeToNodeRequest(
+  networkRequest: NetworkRequest
+): networkRequest is NodeToNodeRequest {
+  return networkRequest.type !== "broadcast-request";
+}

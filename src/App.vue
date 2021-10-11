@@ -87,7 +87,7 @@ export default class App extends Vue {
     });
   }
 
-  sendLogToNode(logToSend: number) {
+  sendLogToNode(logToSend: number): void {
     if (!this.selectedNode) {
       throw new Error("There is no selected node so we cant switch its state");
     }
@@ -95,7 +95,6 @@ export default class App extends Vue {
       nodeId: this.selectedNode.id,
       logToSend,
     });
-    // TODO DAU : dispatch the action to the store
   }
 }
 </script>

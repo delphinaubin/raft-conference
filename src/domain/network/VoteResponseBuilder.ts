@@ -1,7 +1,7 @@
 import { VoteRequest, VoteResponse } from "@/domain/network/NetworkRequest";
-import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
+import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
 
-export class VoteResponseBuilder extends NetworkRequestBuilder {
+export class VoteResponseBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;
   private granted?: boolean;
   private voterId?: string;
@@ -26,14 +26,14 @@ export class VoteResponseBuilder extends NetworkRequestBuilder {
 
   build(): VoteResponse {
     if (!this.voterId) {
-      throw new Error("Cannot build a vote request without voterId");
+      throw new Error("Cannot build a vote response without voterId");
     }
     if (!this.term) {
-      throw new Error("Cannot build a vote request without term");
+      throw new Error("Cannot build a vote response without term");
     }
 
-    if (!this.granted) {
-      throw new Error("Cannot build a vote request without granted");
+    if (this.granted === undefined) {
+      throw new Error("Cannot build a vote response without granted");
     }
     return {
       ...super.build(),

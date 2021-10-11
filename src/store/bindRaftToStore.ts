@@ -1,4 +1,4 @@
-import { NetworkManager } from "@/domain/network/NetworkManager";
+import { NodeToNodeNetworkManager } from "@/domain/network/NodeToNodeNetworkManager";
 import { RaftNode } from "@/domain/RaftNode";
 import { NodeAlgorithm } from "@/domain/raft/NodeAlgorithm";
 import { CandidateState } from "@/domain/raft/states/CandidateState";
@@ -73,4 +73,4 @@ export const nodes = new Map(
   })
 );
 
-export const networkManager = new NetworkManager(eventBus);
+export const networkManager = new NodeToNodeNetworkManager(eventBus);

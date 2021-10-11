@@ -6,8 +6,6 @@ import { RaftEvent } from "@/domain/event/EventBus";
 import { getNetworkLinksBetweenNodes } from "@/store/getNetworkLinksBetweenNodes";
 import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
 import { BroadcastRequestBuilder } from "@/domain/network/BroadcastRequestBuilder";
-import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
-import { BroadcastEvent } from "@/domain/spec/raft";
 import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
 
 export interface HistoryEntry {
@@ -112,13 +110,11 @@ const store = createStore({
       _,
       { nodeId, logToSend }: { nodeId: string; logToSend: number }
     ) {
-      // TODO DAU : check if USER has node id will cause issues
       await eventBus.emitEvent(
         NetworkRequestEventBuilder.aNetworkRequestEvent()
           .withNetworkRequest(
             BroadcastRequestBuilder.aBroadcastRequest()
               .withLog(logToSend)
-              .withSenderNodeId("USER")
               .withReceiverNodeId(nodeId)
               .build()
           )
