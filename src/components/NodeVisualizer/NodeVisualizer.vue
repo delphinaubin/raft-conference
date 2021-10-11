@@ -7,7 +7,7 @@
     :configs="configs"
     :zoom-level="2"
     :event-handlers="eventHandlers"
-    :selected-nodes="selectedNodesIds"
+    :selected-nodes="selectedNodeId ? [selectedNodeId] : []"
     :selected-edges="selectedEdgeIds"
   >
     <template #edge-label="{ edge, ...slotProps }">
@@ -80,14 +80,14 @@ type GraphEdge = Edge & { status: NetworkLinkStatus };
   props: {
     nodes: Array,
     networkLinks: Array,
-    selectedNodes: Array,
+    selectedNode: [Object, null],
     selectedNetworkLinks: Array,
   },
 })
 export default class NodeVisualizer extends Vue {
   nodes!: RaftNode[];
   networkLinks!: NetworkLink[];
-  selectedNodes!: RaftNode[];
+  selectedNode!: RaftNode | null;
   selectedNetworkLinks!: NetworkLink[];
 
   get graphNodes(): Record<string, GraphNode> {
@@ -154,7 +154,12 @@ export default class NodeVisualizer extends Vue {
         },
       },
       edge: {
+        gap: 8,
+        margin: 8,
         selectable: true,
+        label: {
+          fontSize: 4,
+        },
         marker: {
           target: {
             type: "arrow",
@@ -166,7 +171,7 @@ export default class NodeVisualizer extends Vue {
           color: (edge: Edge): string =>
             edge.status === "connected" ? "lightgreen" : "orangered",
           dasharray: (edge: Edge): number =>
-            edge.status === "connected" ? 0 : 8,
+            edge.status === "connected" ? 0 : 2,
         },
         hover: {
           color: "black",
@@ -180,16 +185,16 @@ export default class NodeVisualizer extends Vue {
 
   get eventHandlers(): EventHandlers {
     return {
-      "node:select": (selectedNodesIds) => {
-        const selectedNodes = selectedNodesIds.map((nodeId) =>
-          this.nodes.find((node) => node.id === nodeId)
+      "node:select": ([selectedNodeId]) => {
+        const selectedNode = this.nodes.find(
+          (node) => node.id === selectedNodeId
         );
 
         const hackBecauseThisGraphLibraryHandlesStatesLikeShit =
-          selectedNodesIds.toString() !== this.selectedNodesIds.toString();
+          selectedNodeId !== this.selectedNodeId;
 
         if (hackBecauseThisGraphLibraryHandlesStatesLikeShit) {
-          this.$emit("selected-nodes-change", selectedNodes);
+          this.$emit("selected-node-change", selectedNode);
         }
       },
       "edge:select": (selectedEdgeIds) => {
@@ -219,8 +224,8 @@ export default class NodeVisualizer extends Vue {
     };
   }
 
-  get selectedNodesIds(): string[] {
-    return this.selectedNodes.map(({ id }) => id);
+  get selectedNodeId(): string | null {
+    return this.selectedNode ? this.selectedNode.id : null;
   }
 
   get selectedEdgeIds(): string[] {
