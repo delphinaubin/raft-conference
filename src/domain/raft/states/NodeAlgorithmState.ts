@@ -125,6 +125,7 @@ export abstract class NodeAlgorithmState {
       if (termOk && logOk) {
         this.nodeMemoryState.term = request.term;
         this.nodeMemoryState.votedFor = request.senderNodeId;
+        this.changeState("follower");
         // TODO DAU : check the voterId
         this.sendNetworkRequest(
           VoteResponseBuilder.aVoteResponse()

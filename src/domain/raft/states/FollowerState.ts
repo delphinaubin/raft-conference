@@ -9,7 +9,7 @@ export class FollowerState extends NodeAlgorithmState {
 
   onEnterInState(): void {
     super.onEnterInState();
-    this.startElectionTimer(true);
+    this.startElectionTimer(false);
   }
 
   onBroadcastRequest(request: BroadcastRequest): void {
