@@ -1,4 +1,4 @@
-import { LogRequest, VoteRequest } from "@/domain/network/NetworkRequest";
+import { LogRequest } from "@/domain/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
 import { LogEntry } from "@/domain/log/LogEntry";
 

@@ -107,9 +107,14 @@ export abstract class NodeAlgorithmState {
   onVoteRequest(request: VoteRequest): void {
     // message sent by this very node can safely be ignored
     if (request.senderNodeId != this.nodeId) {
-      // TODO add logOk check
       // In raft algorithm, an additional check is made to make sure the log of the receiver is coherent
       // before voting for the sender
+      const myLogTerm = this.lastLogTerm();
+      const logOk =
+        request.logTerm > myLogTerm ||
+        (request.logTerm == myLogTerm &&
+          request.logLength >= this.nodeMemoryState.log.length);
+
       const termOk =
         request.term > this.nodeMemoryState.term ||
         (request.term == this.nodeMemoryState.term &&
@@ -117,12 +122,7 @@ export abstract class NodeAlgorithmState {
             this.nodeMemoryState.votedFor == null));
 
       // TODO DAU : refactor
-      // TODO AFR : implement logOk check
-      if (
-        termOk &&
-        this.name !== "leader" &&
-        this.nodeMemoryState.votedFor === undefined
-      ) {
+      if (termOk && logOk) {
         this.nodeMemoryState.term = request.term;
         this.nodeMemoryState.votedFor = request.senderNodeId;
         // TODO DAU : check the voterId
@@ -196,5 +196,13 @@ export abstract class NodeAlgorithmState {
     ).then(() => {
       this.changeState("candidate");
     });
+  }
+
+  protected lastLogTerm(): number {
+    if (this.nodeMemoryState.log.length > 0) {
+      return this.nodeMemoryState.log[this.nodeMemoryState.log.length - 1].term;
+    } else {
+      return 0;
+    }
   }
 }

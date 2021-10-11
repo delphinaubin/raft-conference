@@ -15,6 +15,8 @@ export interface AbstractNodeToNodeNetworkRequest
 export interface VoteRequest extends AbstractNodeToNodeNetworkRequest {
   type: "vote-request";
   term: number;
+  logLength: number;
+  logTerm: number;
 }
 
 export interface VoteResponse extends AbstractNodeToNodeNetworkRequest {

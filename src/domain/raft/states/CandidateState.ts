@@ -22,6 +22,7 @@ export class CandidateState extends NodeAlgorithmState {
     this.startTimer(2_000, "Election timeout").then(() => {
       this.onElectionTimeout();
     });
+
     this.allNodesIds
       .filter((nodeId) => nodeId !== this.nodeId)
       .forEach((otherNodeId) =>
@@ -30,6 +31,8 @@ export class CandidateState extends NodeAlgorithmState {
             .withSenderNodeId(this.nodeId)
             .withReceiverNodeId(otherNodeId)
             .withTerm(this.nodeMemoryState.term)
+            .withLogLength(this.nodeMemoryState.log.length)
+            .withLogTerm(this.lastLogTerm())
             .build()
         )
       );
