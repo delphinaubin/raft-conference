@@ -1,5 +1,5 @@
 <template>
-  <h1>Raft algorithm demo</h1>
+  <h1>Raft algorithm demo depuis codespace !!!</h1>
   <a-button type="primary" @click="resetSelection">Reset selection</a-button>
   <NodeVisualizer
     :nodes="nodes"
