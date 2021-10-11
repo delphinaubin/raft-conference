@@ -5,7 +5,7 @@ import { LogRequestBuilder } from "@/domain/network/LogRequestBuilder";
 export class LeaderState extends NodeAlgorithmState {
   name = "leader" as const;
 
-  private readonly replicateLogTimeout = 1_000;
+  private readonly replicateLogTimeout = 3_000;
 
   onEnterInState(): void {
     super.onEnterInState();

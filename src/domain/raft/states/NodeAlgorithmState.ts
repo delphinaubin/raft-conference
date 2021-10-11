@@ -52,10 +52,15 @@ export abstract class NodeAlgorithmState {
       this.eventBus.unSubscribe(this.eventBusSubscriberId);
     }
 
+    this.cancelTimers();
+
+    this.runningTimers.clear();
+  }
+
+  protected cancelTimers(): void {
     Array.from(this.runningTimers.keys()).forEach((timerId) =>
       this.timerManager.cancelTimer(timerId)
     );
-    this.runningTimers.clear();
   }
 
   onReceiveNetworkRequest(_request: NetworkRequest): void {
@@ -112,6 +117,7 @@ export abstract class NodeAlgorithmState {
             this.nodeMemoryState.votedFor == null));
 
       // TODO DAU : refactor
+      // TODO AFR : implement logOk check
       if (
         termOk &&
         this.name !== "leader" &&
@@ -179,5 +185,16 @@ export abstract class NodeAlgorithmState {
       this.nodeMemoryState.votedFor = undefined;
       this.changeState("follower");
     }
+  }
+
+  electionTimerDuration = 10_000;
+  protected startElectionTimer(withRandomModifier: boolean): void {
+    const modifier = withRandomModifier ? ~~(Math.random() * 50_000) : 0;
+    this.startTimer(
+      this.electionTimerDuration + modifier,
+      "No leader ack timeout"
+    ).then(() => {
+      this.changeState("candidate");
+    });
   }
 }

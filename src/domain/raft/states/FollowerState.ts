@@ -9,12 +9,7 @@ export class FollowerState extends NodeAlgorithmState {
 
   onEnterInState(): void {
     super.onEnterInState();
-    this.startTimer(
-      2_000 + ~~(Math.random() * 2000),
-      "No leader ack timeout"
-    ).then(() => {
-      this.changeState("candidate");
-    });
+    this.startElectionTimer(true);
   }
 
   onBroadcastRequest(request: BroadcastRequest): void {
@@ -32,8 +27,8 @@ export class FollowerState extends NodeAlgorithmState {
     super.onLogRequest(request);
     if (request.term >= this.nodeMemoryState.term) {
       this.nodeMemoryState.leader = request.leaderId;
-      // TODO cancel election timer
-      // TODO check if this timer is started properly
+      this.cancelTimers();
+      this.startElectionTimer(false);
     }
     const logOk =
       this.nodeMemoryState.log.length >= request.logLength &&

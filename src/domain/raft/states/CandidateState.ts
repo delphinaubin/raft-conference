@@ -2,6 +2,7 @@ import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
 import { VoteRequestBuilder } from "@/domain/network/VoteRequestBuilder";
 import {
   BroadcastRequest,
+  LogRequest,
   VoteResponse,
 } from "@/domain/network/NetworkRequest";
 
@@ -49,8 +50,16 @@ export class CandidateState extends NodeAlgorithmState {
     }
   }
 
-  onBroadcastRequest(request: BroadcastRequest): Promise<void> {
+  onBroadcastRequest(request: BroadcastRequest): void {
     // leader is unknown at this time, so do nothing
-    return Promise.resolve(undefined);
+  }
+
+  protected onLogRequest(request: LogRequest): void {
+    super.onLogRequest(request);
+    if (request.term >= this.nodeMemoryState.term) {
+      this.nodeMemoryState.leader = request.leaderId;
+      this.cancelTimers();
+      this.startElectionTimer(false);
+    }
   }
 }
