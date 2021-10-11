@@ -33,18 +33,18 @@ export class LogResponseBuilder extends NodeToNodeNetworkRequestBuilder {
 
   build(): LogResponse {
     if (!this.follower) {
-      throw new Error("Cannot build a vote request without follower");
+      throw new Error("Cannot build a log response without follower");
     }
     if (!this.term) {
-      throw new Error("Cannot build a vote request without term");
+      throw new Error("Cannot build a log response without term");
     }
 
     if (!this.ack) {
-      throw new Error("Cannot build a vote request without ack");
+      throw new Error("Cannot build a log response without ack");
     }
 
     if (this.success === undefined) {
-      throw new Error("Cannot build a vote request without success");
+      throw new Error("Cannot build a log response without success");
     }
 
     return {

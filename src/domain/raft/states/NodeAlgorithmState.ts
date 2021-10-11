@@ -51,6 +51,11 @@ export abstract class NodeAlgorithmState {
     if (this.eventBusSubscriberId) {
       this.eventBus.unSubscribe(this.eventBusSubscriberId);
     }
+
+    Array.from(this.runningTimers.keys()).forEach((timerId) =>
+      this.timerManager.cancelTimer(timerId)
+    );
+    this.runningTimers.clear();
   }
 
   async onReceiveNetworkRequest(_request: NetworkRequest): Promise<void> {
@@ -110,7 +115,7 @@ export abstract class NodeAlgorithmState {
         this.nodeMemoryState.term = request.term;
         this.nodeMemoryState.votedFor = request.senderNodeId;
         // TODO DAU : check the voterId
-        const promise = this.sendNetworkRequest(
+        await this.sendNetworkRequest(
           VoteResponseBuilder.aVoteResponse()
             .withSenderNodeId(this.nodeId)
             .withVoterId(this.nodeId)
@@ -119,15 +124,9 @@ export abstract class NodeAlgorithmState {
             .withTerm(this.nodeMemoryState.term)
             .build()
         );
-
-        await promise;
-        if (this.name != "candidate") {
-          // TODO DAU : implement it in all substates which are not candidate
-          await this.changeState("candidate");
-        }
       } else {
         // TODO DAU : check the voterId
-        const promise = this.sendNetworkRequest(
+        await this.sendNetworkRequest(
           VoteResponseBuilder.aVoteResponse()
             .withSenderNodeId(this.nodeId)
             .withVoterId(this.nodeId)
@@ -136,7 +135,6 @@ export abstract class NodeAlgorithmState {
             .withGranted(false)
             .build()
         );
-        await promise;
       }
     }
   }

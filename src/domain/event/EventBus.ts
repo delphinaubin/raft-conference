@@ -15,17 +15,21 @@ function* eventIdGenerator(): Generator<number> {
 export class EventBus {
   private readonly idGenerator = eventIdGenerator();
   private readonly subscribers: Map<number, Subscriber> = new Map();
-  private lastEmitPromise: Promise<void> = Promise.resolve();
+  // private lastEmitPromise: Promise<void> = Promise.resolve();
 
   async emitEvent(event: RaftEvent): Promise<void> {
-    const currentPromise = Array.from(this.subscribers.values()).reduce(
-      async (lastPromise, currentSubscriber) => {
-        await lastPromise;
-        await currentSubscriber(event);
-      },
-      this.lastEmitPromise
+    Array.from(this.subscribers.values()).forEach((subscriber) =>
+      subscriber(event)
     );
-    this.lastEmitPromise = currentPromise;
+
+    // const currentPromise = Array.from(this.subscribers.values()).reduce(
+    //   async (lastPromise, currentSubscriber) => {
+    //     await lastPromise;
+    //     await currentSubscriber(event);
+    //   },
+    //   this.lastEmitPromise
+    // );
+    // this.lastEmitPromise = currentPromise;
   }
 
   subscribe(subscriber: Subscriber): number {

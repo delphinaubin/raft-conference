@@ -35,7 +35,9 @@ export abstract class AbstractNodeAlgorithm {
       switch (event.type) {
         case "change-state": {
           if (event.nodeId === this.id) {
-            await this.goToState(event.toState);
+            if (event.toState !== this.currentState?.name) {
+              await this.goToState(event.toState);
+            }
           }
           break;
         }

@@ -47,7 +47,11 @@ export interface BroadcastRequest extends AbstractNetworkRequest {
   log: number;
 }
 
-export type NodeToNodeRequest = VoteRequest | VoteResponse | LogRequest |  LogResponse;
+export type NodeToNodeRequest =
+  | VoteRequest
+  | VoteResponse
+  | LogRequest
+  | LogResponse;
 
 export type NetworkRequest = NodeToNodeRequest | BroadcastRequest;
 

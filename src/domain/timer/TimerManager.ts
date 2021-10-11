@@ -14,6 +14,7 @@ export class TimerManager {
   startTimer(duration: number, starterNodeId: string): number {
     const timerId = setTimeout(() => {
       this.runningTimers.delete(timerId);
+      console.log("TIMER ENDED", { starterNodeId, duration });
       this.eventBus.emitEvent(
         TimerEventBuilder.aTimerEvent()
           .startedByNodeId(starterNodeId)

@@ -18,7 +18,6 @@ export class FollowerState extends NodeAlgorithmState {
     if (this.nodeMemoryState.leader != undefined) {
       await this.sendNetworkRequest(
         BroadcastRequestBuilder.aBroadcastRequest()
-          .withSenderNodeId(this.nodeId)
           .withReceiverNodeId(this.nodeMemoryState.leader)
           .withLog(request.log)
           .build()

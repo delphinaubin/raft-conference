@@ -5,7 +5,7 @@ import { LogRequestBuilder } from "@/domain/network/LogRequestBuilder";
 export class LeaderState extends NodeAlgorithmState {
   name = "leader" as const;
 
-  private readonly replicateLogTimeout = 2_000;
+  private readonly replicateLogTimeout = 1_000;
 
   async onEnterInState(): Promise<void> {
     await super.onEnterInState();
@@ -19,17 +19,17 @@ export class LeaderState extends NodeAlgorithmState {
       this.nodeMemoryState.sentLength[follower] =
         this.nodeMemoryState.log.length;
       this.nodeMemoryState.ackedLength[follower] = 0;
-
-      this.startTimer(this.replicateLogTimeout).then(() => {
-        this.onReplicateLogTimeout();
-      });
     });
+    await this.startTimer(this.replicateLogTimeout);
+    await this.onReplicateLogTimeout();
   }
 
   private async onReplicateLogTimeout(): Promise<void> {
-    this.allNodesIds
-      .filter((node) => node != this.nodeId)
-      .forEach((follower) => this.replicateLog(follower));
+    await Promise.all(
+      this.allNodesIds
+        .filter((node) => node != this.nodeId)
+        .map((follower) => this.replicateLog(follower))
+    );
 
     this.startTimer(this.replicateLogTimeout).then(() => {
       this.onReplicateLogTimeout();
