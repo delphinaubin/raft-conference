@@ -1,10 +1,11 @@
-import { LogResponse, VoteRequest } from "@/domain/network/NetworkRequest";
+import { LogResponse } from "@/domain/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
 
 export class LogResponseBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;
   private ack?: number;
   private success?: boolean;
+  // TODO follower = senderID, remove it
   private follower?: string;
 
   static aLogResponse(): LogResponseBuilder {

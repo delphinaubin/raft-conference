@@ -4,6 +4,9 @@ import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder"
 import { TimerManager } from "@/domain/timer/TimerManager";
 import { NodeMemoryState } from "@/domain/raft/AbstractNodeAlgorithm";
 import {
+  BroadcastRequest,
+  LogRequest,
+  LogResponse,
   NetworkRequest,
   VoteRequest,
   VoteResponse,
@@ -24,6 +27,8 @@ export abstract class NodeAlgorithmState {
   private eventBusSubscriberId?: number;
 
   abstract name: RaftNodeState;
+
+  abstract onBroadcastRequest(request: BroadcastRequest): Promise<void>;
 
   async onEnterInState(): Promise<void> {
     this.eventBusSubscriberId = this.eventBus.subscribe((event) => {
@@ -53,6 +58,12 @@ export abstract class NodeAlgorithmState {
       await this.onVoteRequest(_request);
     } else if (_request.type == "vote-response") {
       await this.onVoteResponse(_request);
+    } else if (_request.type == "log-request") {
+      await this.onLogRequest(_request);
+    } else if (_request.type == "log-response") {
+      await this.onLogResponse(_request);
+    } else if (_request.type == "broadcast-request") {
+      await this.onBroadcastRequest(_request);
     }
   }
 
@@ -130,15 +141,40 @@ export abstract class NodeAlgorithmState {
     }
   }
 
+  // TODO make sure all nodes handles requests and responses
+  // i.e. even candidates nodes should send back log response
+  // in case of the node is with an outdated term
+
   protected async onVoteResponse(response: VoteResponse): Promise<void> {
-    if (response.term > this.nodeMemoryState.term) {
-      this.nodeMemoryState.term = response.term;
-      this.nodeMemoryState.votedFor = undefined;
-      await this.changeState("candidate");
-    }
+    await this.adjustTermIfNewer(response.term);
+  }
+
+  protected async onLogRequest(request: LogRequest): Promise<void> {
+    await this.adjustTermIfNewer(request.term);
+  }
+
+  protected async onLogResponse(response: LogResponse): Promise<void> {
+    // Do nothing by default, only leader is interrested by this network event
   }
 
   protected quorumReached(numberOfAcks: number): boolean {
     return numberOfAcks >= Math.ceil(this.allNodesIds.length + 1) / 2;
+  }
+
+  protected appendRecordToLog(request: BroadcastRequest): void {
+    this.nodeMemoryState.log.push({
+      term: this.nodeMemoryState.term,
+      value: request.log,
+    });
+    this.nodeMemoryState.ackedLength[this.nodeId] =
+      this.nodeMemoryState.log.length;
+  }
+
+  private async adjustTermIfNewer(term: number): Promise<void> {
+    if (term > this.nodeMemoryState.term) {
+      this.nodeMemoryState.term = term;
+      this.nodeMemoryState.votedFor = undefined;
+      await this.changeState("follower");
+    }
   }
 }

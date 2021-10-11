@@ -2,6 +2,7 @@ import { LogRequest, VoteRequest } from "@/domain/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
 import { LogEntry } from "@/domain/log/LogEntry";
 
+// TODO leaderId = senderId so it's not necessary and should be removed
 export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;
   private leaderId?: string;

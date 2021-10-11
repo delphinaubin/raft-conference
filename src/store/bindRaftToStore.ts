@@ -20,6 +20,7 @@ const INITIAL_NODE_MEMORY_STATE = () => ({
   sentLength: {},
   ackedLength: {},
   log: [],
+  commitLength: 0,
 });
 
 export const eventBus = new EventBus();

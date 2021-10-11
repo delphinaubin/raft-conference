@@ -1,5 +1,8 @@
 import { LogEntry } from "@/domain/log/LogEntry";
 
+// TODO Broadcast requests are usually sent from the outside worl
+// The senderNodeId is therefore not mandatory in theory
+// Maybe it's not a big deal in practice
 export interface AbstractNetworkRequest {
   receiverNodeId: string;
 }
@@ -44,7 +47,7 @@ export interface BroadcastRequest extends AbstractNetworkRequest {
   log: number;
 }
 
-export type NodeToNodeRequest = VoteRequest | VoteResponse | LogRequest;
+export type NodeToNodeRequest = VoteRequest | VoteResponse | LogRequest |  LogResponse;
 
 export type NetworkRequest = NodeToNodeRequest | BroadcastRequest;
 
