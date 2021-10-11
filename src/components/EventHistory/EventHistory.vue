@@ -75,7 +75,7 @@ export default class EventHistory extends Vue {
             type: "network",
             label: `${this.nodeNamesById.get(
               event.networkRequest.senderNodeId
-            )} sent request to ${this.nodeNamesById.get(
+            )} sent ${event.networkRequest.type} to ${this.nodeNamesById.get(
               event.networkRequest.receiverNodeId
             )}`,
             color: "limegreen",
