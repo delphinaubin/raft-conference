@@ -110,11 +110,11 @@ export abstract class NodeAlgorithmState {
     );
   }
 
-  onBroadcastRequest(request: BroadcastRequest): void {
+  protected onBroadcastRequest(request: BroadcastRequest): void {
     // DO NOTHING
   }
 
-  onVoteRequest(request: VoteRequest): void {
+  protected onVoteRequest(request: VoteRequest): void {
     // do nothing
   }
 

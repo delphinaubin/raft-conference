@@ -1,6 +1,11 @@
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
-import { BroadcastRequest, LogRequest } from "@/domain/network/NetworkRequest";
+import {
+  BroadcastRequest,
+  LogRequest,
+  VoteRequest,
+} from "@/domain/network/NetworkRequest";
 import { BroadcastRequestBuilder } from "@/domain/network/BroadcastRequestBuilder";
+import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
 
 export class FollowerState extends NodeAlgorithmState {
   name = "follower" as const;
@@ -34,8 +39,29 @@ export class FollowerState extends NodeAlgorithmState {
   startLeaderTimeoutTimer(): void {
     this.startTimerWithRandomDuration(10_000, "no leader ack timeout").then(
       () => {
-        this.changeState("leader");
+        this.changeState("candidate");
       }
     );
+  }
+
+  onVoteRequest(request: VoteRequest): void {
+    if (this.nodeMemoryState.votedFor == null) {
+      this.nodeMemoryState.votedFor = request.senderNodeId;
+      this.sendNetworkRequest(
+        VoteResponseBuilder.aVoteResponse()
+          .withSenderNodeId(this.nodeId)
+          .withReceiverNodeId(request.senderNodeId)
+          .withGranted(true)
+          .build()
+      );
+    } else {
+      this.sendNetworkRequest(
+        VoteResponseBuilder.aVoteResponse()
+          .withSenderNodeId(this.nodeId)
+          .withReceiverNodeId(request.senderNodeId)
+          .withGranted(false)
+          .build()
+      );
+    }
   }
 }

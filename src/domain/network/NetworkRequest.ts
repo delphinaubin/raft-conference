@@ -14,15 +14,15 @@ export interface AbstractNodeToNodeNetworkRequest
 
 export interface VoteRequest extends AbstractNodeToNodeNetworkRequest {
   type: "vote-request";
-  term: number;
-  logLength: number;
-  logTerm: number;
+  term?: number;
+  logLength?: number;
+  logTerm?: number;
 }
 
 export interface VoteResponse extends AbstractNodeToNodeNetworkRequest {
   type: "vote-response";
-  term: number;
-  voterId: string;
+  term?: number;
+  voterId?: string;
   granted: boolean;
 }
 

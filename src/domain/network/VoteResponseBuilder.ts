@@ -25,13 +25,6 @@ export class VoteResponseBuilder extends NodeToNodeNetworkRequestBuilder {
   }
 
   build(): VoteResponse {
-    if (!this.voterId) {
-      throw new Error("Cannot build a vote response without voterId");
-    }
-    if (!this.term) {
-      throw new Error("Cannot build a vote response without term");
-    }
-
     if (this.granted === undefined) {
       throw new Error("Cannot build a vote response without granted");
     }
