@@ -158,4 +158,11 @@ export abstract class NodeAlgorithmState {
       return 0;
     }
   }
+
+  protected addLog(log: number) {
+    this.nodeMemoryState.log.push({
+      term: 0,
+      value: log,
+    });
+  }
 }
