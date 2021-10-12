@@ -39,7 +39,7 @@ export class LogResponseBuilder extends NodeToNodeNetworkRequestBuilder {
       throw new Error("Cannot build a log response without term");
     }
 
-    if (!this.ack) {
+    if (this.ack === undefined) {
       throw new Error("Cannot build a log response without ack");
     }
 
