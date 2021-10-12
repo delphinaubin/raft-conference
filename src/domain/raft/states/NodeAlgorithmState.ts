@@ -85,13 +85,21 @@ export abstract class NodeAlgorithmState {
     );
   }
 
-  // The timerID can be used by state algorithm to cancel running timer
-  // (for instance if a node is elected leader, it cancels it's election timer
   protected startTimer(duration: number, label: string): Promise<void> {
     const timerId = this.timerManager.startTimer(duration, this.nodeId, label);
     return new Promise<void>((resolve) => {
       this.runningTimers.set(timerId, resolve);
     });
+  }
+
+  // TODO do not cheat
+  protected startTimerWithRandomDuration(
+    duration: number,
+    label: string
+  ): Promise<void> {
+    // const randomDuration = duration + ~~(Math.random() * randomizer);
+    const test = parseInt(this.nodeId) * 10_000;
+    return this.startTimer(test, label);
   }
 
   protected sendNetworkRequest(request: NetworkRequest): void {

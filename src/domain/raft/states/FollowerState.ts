@@ -7,11 +7,16 @@ export class FollowerState extends NodeAlgorithmState {
 
   onEnterInState(): void {
     super.onEnterInState();
+
+    this.startLeaderTimeoutTimer();
   }
 
   onLogRequest(request: LogRequest): void {
     super.onLogRequest(request);
     this.setLogs(request.entries);
+
+    this.cancelTimers();
+    this.startLeaderTimeoutTimer();
 
     // TODO enlever quand on aura l'affichage
     this.printLogs();
@@ -23,6 +28,14 @@ export class FollowerState extends NodeAlgorithmState {
         .withReceiverNodeId("1")
         .withLog(request.log)
         .build()
+    );
+  }
+
+  startLeaderTimeoutTimer(): void {
+    this.startTimerWithRandomDuration(10_000, "no leader ack timeout").then(
+      () => {
+        this.changeState("leader");
+      }
     );
   }
 }
