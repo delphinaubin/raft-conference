@@ -28,11 +28,11 @@ export interface VoteResponse extends AbstractNodeToNodeNetworkRequest {
 
 export interface LogRequest extends AbstractNodeToNodeNetworkRequest {
   type: "log-request";
-  leaderId: string;
-  term: number;
-  logLength: number;
-  logTerm: number;
-  leaderCommit: number;
+  leaderId?: string;
+  term?: number;
+  logLength?: number;
+  logTerm?: number;
+  leaderCommit?: number;
   entries: LogEntry[];
 }
 

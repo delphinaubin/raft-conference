@@ -8,12 +8,12 @@ import {
   LogRequest,
   LogResponse,
   NetworkRequest,
-  NodeToNodeRequest,
   VoteRequest,
   VoteResponse,
 } from "@/domain/network/NetworkRequest";
+import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
 import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
-import { NodeToNodeNetworkManager } from "@/domain/network/NodeToNodeNetworkManager";
+import { LogEntry } from "@/domain/log/LogEntry";
 
 export abstract class NodeAlgorithmState {
   constructor(
@@ -21,8 +21,7 @@ export abstract class NodeAlgorithmState {
     protected readonly timerManager: TimerManager,
     protected readonly nodeId: string,
     protected readonly nodeMemoryState: NodeMemoryState,
-    protected readonly allNodesIds: string[],
-    protected readonly networkManager: NodeToNodeNetworkManager
+    protected readonly allNodesIds: string[]
   ) {}
 
   private readonly runningTimers: Map<number, () => void> = new Map();
@@ -95,8 +94,12 @@ export abstract class NodeAlgorithmState {
     });
   }
 
-  protected sendNetworkRequest(request: NodeToNodeRequest): void {
-    this.networkManager.sendRequest(request);
+  protected sendNetworkRequest(request: NetworkRequest): void {
+    this.eventBus.emitEvent(
+      NetworkRequestEventBuilder.aNetworkRequestEvent()
+        .withNetworkRequest(request)
+        .build()
+    );
   }
 
   onBroadcastRequest(request: BroadcastRequest): void {
@@ -159,10 +162,23 @@ export abstract class NodeAlgorithmState {
     }
   }
 
-  protected addLog(log: number) {
+  protected addLog(log: number): void {
     this.nodeMemoryState.log.push({
       term: 0,
       value: log,
     });
+  }
+
+  protected setLogs(entries: LogEntry[]): void {
+    this.nodeMemoryState.log = entries;
+  }
+
+  protected getLogEntries(): LogEntry[] {
+    return this.nodeMemoryState.log;
+  }
+
+  protected printLogs(): void {
+    console.log(`node ${this.nodeId} logs:`);
+    this.nodeMemoryState.log.forEach((l) => console.log(l.value));
   }
 }

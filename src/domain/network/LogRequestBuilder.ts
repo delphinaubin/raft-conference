@@ -46,23 +46,6 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   }
 
   build(): LogRequest {
-    if (!this.leaderId) {
-      throw new Error("Cannot build a log request without leaderId");
-    }
-
-    if (this.term === undefined) {
-      throw new Error("Cannot build a log request without term");
-    }
-    if (this.logLength === undefined) {
-      throw new Error("Cannot build a log request without logLength ");
-    }
-    if (this.logTerm === undefined) {
-      throw new Error("Cannot build a log request without logTerm");
-    }
-    if (this.leaderCommit === undefined) {
-      throw new Error("Cannot build a log request without leaderCommit");
-    }
-
     return {
       ...super.build(),
       type: "log-request",
