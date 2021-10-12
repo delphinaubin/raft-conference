@@ -6,6 +6,7 @@ export interface TimerEvent {
   status: TimerStatus;
   starterNodeId: string;
   label: string;
+  isAsyncEvent: true;
 }
 
 export class TimerEventBuilder {
@@ -61,6 +62,7 @@ export class TimerEventBuilder {
       status: this.status,
       starterNodeId: this.starterNodeId,
       label: this.label,
+      isAsyncEvent: true,
     };
   }
 }

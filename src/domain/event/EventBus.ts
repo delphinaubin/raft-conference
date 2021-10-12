@@ -18,24 +18,17 @@ function* subscriberIdGenerator(): Generator<number> {
 export class EventBus {
   private readonly idGenerator = subscriberIdGenerator();
   private readonly subscribers: Map<number, Subscriber> = new Map();
-  // private lastEmitPromise: Promise<void> = Promise.resolve();
-
   private eventEmissionNumber = 0;
 
   emitEvent(event: RaftEvent): void {
     const idToEmit = this.eventEmissionNumber++;
-    Array.from(this.subscribers.values()).forEach((subscriber) =>
-      setTimeout(() => subscriber({ eventId: idToEmit, event }), 0)
-    );
-
-    // const currentPromise = Array.from(this.subscribers.values()).reduce(
-    //   async (lastPromise, currentSubscriber) => {
-    //     await lastPromise;
-    //     await currentSubscriber(event);
-    //   },
-    //   this.lastEmitPromise
-    // );
-    // this.lastEmitPromise = currentPromise;
+    Array.from(this.subscribers.values()).forEach((subscriber) => {
+      if (event.isAsyncEvent) {
+        setTimeout(() => subscriber({ eventId: idToEmit, event }), 0);
+      } else {
+        subscriber({ eventId: idToEmit, event });
+      }
+    });
   }
 
   subscribe(subscriber: Subscriber): number {

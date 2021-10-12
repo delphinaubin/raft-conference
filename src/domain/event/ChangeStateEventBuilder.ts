@@ -4,6 +4,7 @@ export interface ChangeStateEvent {
   type: "change-state";
   toState: RaftNodeState;
   nodeId: string;
+  isAsyncEvent: false;
 }
 
 export class ChangeStateEventBuilder {
@@ -39,6 +40,7 @@ export class ChangeStateEventBuilder {
       type: "change-state",
       nodeId: this.nodeId,
       toState: this.stateToGoTo,
+      isAsyncEvent: false,
     };
   }
 }

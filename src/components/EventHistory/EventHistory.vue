@@ -86,9 +86,9 @@ export default class EventHistory extends Vue {
                 event.networkRequest.type
               } to ${this.nodeNamesById.get(
                 event.networkRequest.receiverNodeId
-              )} to ${
-                event.networkRequest.granted ? "grant it" : "not grant it"
-              } to leader`,
+              )} ${
+                event.networkRequest.granted ? "👍" : "👎"
+              }`,
               color: "limegreen",
             };
           }

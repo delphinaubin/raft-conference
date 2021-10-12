@@ -3,6 +3,7 @@ import { NetworkRequest } from "@/domain/network/NetworkRequest";
 export interface NetworkEvent {
   type: "network";
   networkRequest: NetworkRequest;
+  isAsyncEvent: true;
 }
 
 export class NetworkRequestEventBuilder {
@@ -25,6 +26,7 @@ export class NetworkRequestEventBuilder {
     return {
       type: "network",
       networkRequest: this.networkRequest,
+      isAsyncEvent: true,
     };
   }
 }
