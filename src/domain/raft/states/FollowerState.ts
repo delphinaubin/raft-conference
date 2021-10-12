@@ -1,5 +1,6 @@
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
-import { LogRequest } from "@/domain/network/NetworkRequest";
+import { BroadcastRequest, LogRequest } from "@/domain/network/NetworkRequest";
+import { BroadcastRequestBuilder } from "@/domain/network/BroadcastRequestBuilder";
 
 export class FollowerState extends NodeAlgorithmState {
   name = "follower" as const;
@@ -14,5 +15,14 @@ export class FollowerState extends NodeAlgorithmState {
 
     // TODO enlever quand on aura l'affichage
     this.printLogs();
+  }
+
+  onBroadcastRequest(request: BroadcastRequest): void {
+    this.sendNetworkRequest(
+      BroadcastRequestBuilder.aBroadcastRequest()
+        .withReceiverNodeId("1")
+        .withLog(request.log)
+        .build()
+    );
   }
 }
