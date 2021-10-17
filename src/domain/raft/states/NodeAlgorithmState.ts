@@ -8,11 +8,12 @@ import {
   LogRequest,
   LogResponse,
   NetworkRequest,
+  NodeToNodeRequest,
   VoteRequest,
   VoteResponse,
 } from "@/domain/network/NetworkRequest";
-import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
 import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
+import { NodeToNodeNetworkManager } from "@/domain/network/NodeToNodeNetworkManager";
 
 export abstract class NodeAlgorithmState {
   constructor(
@@ -20,7 +21,8 @@ export abstract class NodeAlgorithmState {
     protected readonly timerManager: TimerManager,
     protected readonly nodeId: string,
     protected readonly nodeMemoryState: NodeMemoryState,
-    protected readonly allNodesIds: string[]
+    protected readonly allNodesIds: string[],
+    protected readonly networkManager: NodeToNodeNetworkManager
   ) {}
 
   private readonly runningTimers: Map<number, () => void> = new Map();
@@ -96,12 +98,8 @@ export abstract class NodeAlgorithmState {
     });
   }
 
-  protected sendNetworkRequest(request: NetworkRequest): void {
-    this.eventBus.emitEvent(
-      NetworkRequestEventBuilder.aNetworkRequestEvent()
-        .withNetworkRequest(request)
-        .build()
-    );
+  protected sendNetworkRequest(request: NodeToNodeRequest): void {
+    this.networkManager.sendRequest(request);
   }
 
   onVoteRequest(request: VoteRequest): void {
