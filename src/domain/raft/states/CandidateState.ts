@@ -1,6 +1,10 @@
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
 import { VoteRequestBuilder } from "@/domain/network/VoteRequestBuilder";
-import { VoteResponse } from "@/domain/network/NetworkRequest";
+import {
+  LogRequest,
+  VoteRequest,
+  VoteResponse,
+} from "@/domain/network/NetworkRequest";
 
 export class CandidateState extends NodeAlgorithmState {
   name = "candidate" as const;
@@ -9,6 +13,7 @@ export class CandidateState extends NodeAlgorithmState {
     super.onEnterInState();
 
     this.cancelTimers();
+    this.nodeMemoryState.term++;
     this.nodeMemoryState.votesReceived = [this.nodeId];
     this.nodeMemoryState.votedFor = this.nodeId;
 
@@ -17,6 +22,7 @@ export class CandidateState extends NodeAlgorithmState {
       .forEach((nodeId) => {
         this.sendNetworkRequest(
           VoteRequestBuilder.aVoteRequest()
+            .withTerm(this.nodeMemoryState.term)
             .withSenderNodeId(this.nodeId)
             .withReceiverNodeId(nodeId)
             .build()
@@ -26,7 +32,7 @@ export class CandidateState extends NodeAlgorithmState {
     this.startElectionTimeoutTimer();
   }
 
-  protected onVoteResponse(response: VoteResponse): void {
+  onVoteResponse(response: VoteResponse): void {
     if (response.granted) {
       if (!this.nodeMemoryState.votesReceived.includes(response.senderNodeId)) {
         this.nodeMemoryState.votesReceived.push(response.senderNodeId);
@@ -34,6 +40,13 @@ export class CandidateState extends NodeAlgorithmState {
           this.changeState("leader");
         }
       }
+    }
+  }
+
+  onVoteRequest(request: VoteRequest): void {
+    if (request.term! > this.nodeMemoryState.term) {
+      this.nodeMemoryState.term = request.term!;
+      this.changeState("follower");
     }
   }
 

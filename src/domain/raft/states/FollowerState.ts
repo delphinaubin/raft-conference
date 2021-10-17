@@ -13,6 +13,8 @@ export class FollowerState extends NodeAlgorithmState {
   onEnterInState(): void {
     super.onEnterInState();
 
+    this.nodeMemoryState.votedFor = undefined;
+    this.nodeMemoryState.votesReceived = [];
     this.startLeaderTimeoutTimer();
   }
 
@@ -45,7 +47,15 @@ export class FollowerState extends NodeAlgorithmState {
   }
 
   onVoteRequest(request: VoteRequest): void {
-    if (this.nodeMemoryState.votedFor == null) {
+    if (request.term! > this.nodeMemoryState.term) {
+      this.nodeMemoryState.term = request.term!;
+      this.nodeMemoryState.votedFor = undefined;
+      this.nodeMemoryState.votesReceived = [];
+    }
+    if (
+      this.nodeMemoryState.votedFor == null &&
+      request.term == this.nodeMemoryState.term
+    ) {
       this.nodeMemoryState.votedFor = request.senderNodeId;
       this.sendNetworkRequest(
         VoteResponseBuilder.aVoteResponse()
