@@ -4,8 +4,8 @@ import {
   LogRequest,
   VoteRequest,
 } from "@/domain/network/NetworkRequest";
-import { BroadcastRequestBuilder } from "@/domain/network/BroadcastRequestBuilder";
 import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
+import { RelayBroadcastRequestBuilder } from "@/domain/network/RelayBroadcastRequestBuilder";
 
 export class FollowerState extends NodeAlgorithmState {
   name = "follower" as const;
@@ -19,6 +19,9 @@ export class FollowerState extends NodeAlgorithmState {
   }
 
   onLogRequest(request: LogRequest): void {
+    console.log(
+      `node ${this.nodeId} received logRequest from ${request.senderNodeId} (destination: ${request.receiverNodeId})`
+    );
     super.onLogRequest(request);
     this.setLogs(request.entries);
 
@@ -30,12 +33,15 @@ export class FollowerState extends NodeAlgorithmState {
   }
 
   onBroadcastRequest(request: BroadcastRequest): void {
-    this.sendNetworkRequest(
-      BroadcastRequestBuilder.aBroadcastRequest()
-        .withReceiverNodeId("1")
-        .withLog(request.log)
-        .build()
-    );
+    if (this.nodeMemoryState.votedFor != undefined) {
+      this.sendNetworkRequest(
+        RelayBroadcastRequestBuilder.aRelayBroadcastRequest()
+          .withSenderNodeId(this.nodeId)
+          .withReceiverNodeId(this.nodeMemoryState.votedFor)
+          .withLog(request.log)
+          .build()
+      );
+    }
   }
 
   startLeaderTimeoutTimer(): void {

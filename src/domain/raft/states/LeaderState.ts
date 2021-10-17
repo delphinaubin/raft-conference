@@ -16,6 +16,7 @@ export class LeaderState extends NodeAlgorithmState {
   onBroadcastRequest(request: BroadcastRequest): void {
     this.addLog(request.log);
 
+    console.log("broadcast request to leader " + this.nodeId);
     // TODO à enlever quand on le verra en graphique
     this.printLogs();
   }

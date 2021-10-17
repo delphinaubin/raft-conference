@@ -24,6 +24,10 @@ export class NodeToNodeNetworkManager {
           .withNetworkRequest(request)
           .build()
       );
+    } else {
+      console.log(
+        `Request ${request.type} from node ${request.senderNodeId} to node ${request.receiverNodeId} does not get through`
+      );
     }
   }
 
