@@ -28,6 +28,8 @@ const timerManager = new TimerManager(eventBus);
 
 const allNodeIds = nodesToCreate.map(({ id }) => id);
 
+export const networkManager = new NodeToNodeNetworkManager(eventBus);
+
 export const nodes = new Map(
   nodesToCreate.map((node) => {
     const nodeMemoryStateReference = INITIAL_NODE_MEMORY_STATE();
@@ -41,28 +43,32 @@ export const nodes = new Map(
             timerManager,
             node.id,
             nodeMemoryStateReference,
-            allNodeIds
+            allNodeIds,
+            networkManager
           ),
           follower: new FollowerState(
             eventBus,
             timerManager,
             node.id,
             nodeMemoryStateReference,
-            allNodeIds
+            allNodeIds,
+            networkManager
           ),
           leader: new LeaderState(
             eventBus,
             timerManager,
             node.id,
             nodeMemoryStateReference,
-            allNodeIds
+            allNodeIds,
+            networkManager
           ),
           off: new OffState(
             eventBus,
             timerManager,
             node.id,
             nodeMemoryStateReference,
-            allNodeIds
+            allNodeIds,
+            networkManager
           ),
         },
         eventBus,
@@ -73,5 +79,3 @@ export const nodes = new Map(
     ];
   })
 );
-
-export const networkManager = new NodeToNodeNetworkManager(eventBus);

@@ -3,6 +3,7 @@ import { BroadcastRequest, LogRequest } from "@/domain/network/NetworkRequest";
 import { BroadcastRequestBuilder } from "@/domain/network/BroadcastRequestBuilder";
 import { LogEntry } from "@/domain/log/LogEntry";
 import { LogResponseBuilder } from "@/domain/network/LogResponseBuilder";
+import { RelayBroadcastRequestBuilder } from "@/domain/network/RelayBroadcastRequestBuilder";
 
 export class FollowerState extends NodeAlgorithmState {
   name = "follower" as const;
@@ -15,7 +16,8 @@ export class FollowerState extends NodeAlgorithmState {
   onBroadcastRequest(request: BroadcastRequest): void {
     if (this.nodeMemoryState.leader != undefined) {
       this.sendNetworkRequest(
-        BroadcastRequestBuilder.aBroadcastRequest()
+        RelayBroadcastRequestBuilder.aRelayBroadcastRequest()
+          .withSenderNodeId(this.nodeId)
           .withReceiverNodeId(this.nodeMemoryState.leader)
           .withLog(request.log)
           .build()

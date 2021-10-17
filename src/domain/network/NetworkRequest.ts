@@ -49,11 +49,18 @@ export interface BroadcastRequest extends AbstractNetworkRequest {
   log: number;
 }
 
+export interface RelayBroadcastRequest
+  extends AbstractNodeToNodeNetworkRequest {
+  type: "broadcast-request";
+  log: number;
+}
+
 export type NodeToNodeRequest =
   | VoteRequest
   | VoteResponse
   | LogRequest
-  | LogResponse;
+  | LogResponse
+  | RelayBroadcastRequest;
 
 export type NetworkRequest = NodeToNodeRequest | BroadcastRequest;
 
