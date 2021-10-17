@@ -21,7 +21,7 @@
             :style="{ color: entry.color }"
           />
         </template>
-        {{ entry.id }}  {{ entry.label }}
+        {{ entry.id }} {{ entry.label }}
       </a-timeline-item>
     </a-timeline>
   </div>
@@ -86,9 +86,7 @@ export default class EventHistory extends Vue {
                 event.networkRequest.type
               } to ${this.nodeNamesById.get(
                 event.networkRequest.receiverNodeId
-              )} ${
-                event.networkRequest.granted ? "👍" : "👎"
-              }`,
+              )} ${event.networkRequest.granted ? "👍" : "👎"}`,
               color: "limegreen",
             };
           }

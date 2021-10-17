@@ -5,9 +5,9 @@
     :nodes="nodes"
     :networkLinks="networkLinks"
     :selected-node="selectedNode"
-    :selected-network-links="selectedNetworkLinks"
+    :selected-network-link="selectedNetworkLink"
     @selected-node-change="selectedNodeChange"
-    @selected-network-links-change="selectedNetworkLinksChange"
+    @selected-network-link-change="selectedNetworkLinkChange"
   ></NodeVisualizer>
   <NodeManagement
     :selected-node="selectedNode"
@@ -16,6 +16,12 @@
     @send-log-to-node="sendLogToNode"
   />
 
+  <NetworkManagement
+    :nodes="nodes"
+    :selected-network-link="selectedNetworkLink"
+    @close-drawer="resetSelection"
+    @switch-network-link-status="switchNetworkLinkStatus"
+  />
   <EventHistory
     :historyEntries="historyEntries"
     :nodeNamesById="nodeNamesById"
@@ -30,23 +36,27 @@ import { NetworkLink } from "@/domain/NetworkLink";
 import store, { HistoryEntry } from "@/store";
 import EventHistory from "@/components/EventHistory/EventHistory.vue";
 import NodeManagement from "@/components/NodeManagement/NodeManagement.vue";
+import NetworkManagement from "@/components/NetworkManagement/NetworkManagement.vue";
 
 @Options({
   components: {
+    NetworkManagement,
     NodeManagement,
     EventHistory,
     NodeVisualizer,
   },
 })
 export default class App extends Vue {
-  selectedNetworkLinks: NetworkLink[] = [];
-
   get nodes(): RaftNode[] {
     return store.state.nodes;
   }
 
   get selectedNode(): RaftNode | null {
     return store.state.selectedNode;
+  }
+
+  get selectedNetworkLink(): NetworkLink | null {
+    return store.state.selectedNetworkLink;
   }
 
   get networkLinks(): NetworkLink[] {
@@ -63,15 +73,15 @@ export default class App extends Vue {
 
   resetSelection(): void {
     store.dispatch("selectedNodeChange", null);
-    this.selectedNetworkLinks = [];
+    store.dispatch("selectedNetworkLinkChange", null);
   }
 
   selectedNodeChange(selectedNode: RaftNode | null): void {
     store.dispatch("selectedNodeChange", selectedNode);
   }
 
-  selectedNetworkLinksChange(selectedNetworkLinks: NetworkLink[]): void {
-    this.selectedNetworkLinks = selectedNetworkLinks;
+  selectedNetworkLinkChange(selectedNetworkLink: NetworkLink): void {
+    store.dispatch("selectedNetworkLinkChange", selectedNetworkLink);
   }
   created(): void {
     store.dispatch("init");
@@ -84,6 +94,21 @@ export default class App extends Vue {
     store.dispatch("switchNodeState", {
       nodeId: this.selectedNode.id,
       newNodeState,
+    });
+  }
+
+  switchNetworkLinkStatus(
+    newNetworkLinkStatus: "connected" | "disconnected"
+  ): void {
+    if (!this.selectedNetworkLink) {
+      throw new Error(
+        "There is no selected network link so we cant change its status"
+      );
+    }
+    store.dispatch("switchNetworkLinkStatus", {
+      fromNodeId: this.selectedNetworkLink.fromNodeId,
+      toNodeId: this.selectedNetworkLink.toNodeId,
+      newNetworkLinkStatus,
     });
   }
 
