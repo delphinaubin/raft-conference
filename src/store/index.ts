@@ -1,7 +1,12 @@
 import { createStore } from "vuex";
 import { RaftNode, RaftNodeState } from "@/domain/RaftNode";
-import { NetworkLink } from "@/domain/NetworkLink";
-import { eventBus, nodes, nodesToCreate } from "@/store/bindRaftToStore";
+import { NetworkLink, NetworkLinkStatus } from "@/domain/NetworkLink";
+import {
+  eventBus,
+  networkManager,
+  nodes,
+  nodesToCreate,
+} from "@/store/bindRaftToStore";
 import { RaftEvent } from "@/domain/event/EventBus";
 import { getNetworkLinksBetweenNodes } from "@/store/getNetworkLinksBetweenNodes";
 import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
@@ -18,6 +23,7 @@ export interface State {
   nodes: RaftNode[];
   networkLinks: NetworkLink[];
   selectedNode: RaftNode | null;
+  selectedNetworkLink: NetworkLink | null;
 }
 
 const initialState: State = {
@@ -25,6 +31,7 @@ const initialState: State = {
   networkLinks: [],
   history: [],
   selectedNode: null,
+  selectedNetworkLink: null,
 };
 
 const store = createStore({
@@ -57,6 +64,31 @@ const store = createStore({
     },
     setSelectedNode(state, selectedNode: RaftNode | null) {
       state.selectedNode = selectedNode || null;
+    },
+
+    setSelectedNetworkLink(state, selectedNetworkLink: NetworkLink | null) {
+      state.selectedNetworkLink = selectedNetworkLink || null;
+    },
+    changeNetworkLinkStatus(
+      state,
+      {
+        fromNodeId,
+        toNodeId,
+        newNetworkLinkStatus,
+      }: {
+        fromNodeId: string;
+        toNodeId: string;
+        newNetworkLinkStatus: NetworkLinkStatus;
+      }
+    ) {
+      const networkLinkToChange = state.networkLinks.find(
+        (networkLink) =>
+          networkLink.fromNodeId === fromNodeId &&
+          networkLink.toNodeId === toNodeId
+      );
+      if (networkLinkToChange) {
+        networkLinkToChange.status = newNetworkLinkStatus;
+      }
     },
   },
   getters: {
@@ -96,6 +128,12 @@ const store = createStore({
     selectedNodeChange({ commit }, selectedNode: RaftNode | null) {
       commit("setSelectedNode", selectedNode);
     },
+    selectedNetworkLinkChange(
+      { commit },
+      selectedNetworkLink: NetworkLink | null
+    ) {
+      commit("setSelectedNetworkLink", selectedNetworkLink);
+    },
     switchNodeState(
       _,
       { nodeId, newNodeState }: { nodeId: string; newNodeState: "off" | "on" }
@@ -119,6 +157,29 @@ const store = createStore({
           .toState(stateToGoTo)
           .build()
       );
+    },
+    switchNetworkLinkStatus(
+      { commit },
+      {
+        fromNodeId,
+        toNodeId,
+        newNetworkLinkStatus,
+      }: {
+        fromNodeId: string;
+        toNodeId: string;
+        newNetworkLinkStatus: NetworkLinkStatus;
+      }
+    ) {
+      if (newNetworkLinkStatus === "disconnected") {
+        networkManager.disableConnection(fromNodeId, toNodeId);
+      } else {
+        networkManager.enableConnection(fromNodeId, toNodeId);
+      }
+      commit("changeNetworkLinkStatus", {
+        fromNodeId,
+        toNodeId,
+        newNetworkLinkStatus,
+      });
     },
     sendLogToNode(
       _,

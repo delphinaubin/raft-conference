@@ -8,11 +8,13 @@
     :zoom-level="2"
     :event-handlers="eventHandlers"
     :selected-nodes="selectedNodeId ? [selectedNodeId] : []"
-    :selected-edges="selectedEdgeIds"
+    :selected-edges="selectedEdgeId ? [selectedEdgeId] : []"
   >
     <template #edge-label="{ edge, ...slotProps }">
       <v-edge-label
-        v-if="edge.status === 'disconnected'"
+        v-if="
+          graphEdges[`${edge.source}_${edge.target}`].status === 'disconnected'
+        "
         text="❌"
         align="center"
         vertical-align="center"
@@ -81,14 +83,14 @@ type GraphEdge = Edge & { status: NetworkLinkStatus };
     nodes: Array,
     networkLinks: Array,
     selectedNode: [Object, null],
-    selectedNetworkLinks: Array,
+    selectedNetworkLink: [Object, null],
   },
 })
 export default class NodeVisualizer extends Vue {
   nodes!: RaftNode[];
   networkLinks!: NetworkLink[];
   selectedNode!: RaftNode | null;
-  selectedNetworkLinks!: NetworkLink[];
+  selectedNetworkLink!: NetworkLink;
 
   get graphNodes(): Record<string, GraphNode> {
     return this.nodes.reduce((result, node) => {
@@ -197,28 +199,20 @@ export default class NodeVisualizer extends Vue {
           this.$emit("selected-node-change", selectedNode);
         }
       },
-      "edge:select": (selectedEdgeIds) => {
-        const selectedNetworkLinks = selectedEdgeIds
-          .map((edgeId) => {
-            const [fromNodeId, toNodeId] = edgeId.split("_");
-            return {
-              fromNodeId,
-              toNodeId,
-            };
-          })
-          .map(({ fromNodeId, toNodeId }) =>
-            this.networkLinks.find(
-              (networkLink) =>
-                networkLink.fromNodeId === fromNodeId &&
-                networkLink.toNodeId === toNodeId
-            )
+      "edge:select": ([selectedEdgeId]) => {
+        let selectedNetworkLink = null;
+        if (selectedEdgeId) {
+          const [fromNodeId, toNodeId] = selectedEdgeId.split("_");
+          selectedNetworkLink = this.networkLinks.find(
+            (networkLink) =>
+              networkLink.fromNodeId === fromNodeId &&
+              networkLink.toNodeId === toNodeId
           );
-
+        }
         const hackBecauseThisGraphLibraryHandlesStatesLikeShit =
-          selectedEdgeIds.toString() !== this.selectedEdgeIds.toString();
-
+          selectedEdgeId?.toString() !== this.selectedEdgeId?.toString();
         if (hackBecauseThisGraphLibraryHandlesStatesLikeShit) {
-          this.$emit("selected-network-links-change", selectedNetworkLinks);
+          this.$emit("selected-network-link-change", selectedNetworkLink);
         }
       },
     };
@@ -228,10 +222,12 @@ export default class NodeVisualizer extends Vue {
     return this.selectedNode ? this.selectedNode.id : null;
   }
 
-  get selectedEdgeIds(): string[] {
-    return this.selectedNetworkLinks.map(
-      ({ fromNodeId, toNodeId }) => `${fromNodeId}_${toNodeId}`
-    );
+  get selectedEdgeId(): string | null {
+    if (!this.selectedNetworkLink) {
+      return null;
+    }
+    const { fromNodeId, toNodeId } = this.selectedNetworkLink;
+    return `${fromNodeId}_${toNodeId}`;
   }
 
   nodeStateToStyle(nodeState: RaftNodeState): NodeStyle {
