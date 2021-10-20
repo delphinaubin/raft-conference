@@ -1,6 +1,7 @@
 import { EventBus } from "@/domain/event/EventBus";
 import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
 import { NodeToNodeRequest } from "@/domain/network/NetworkRequest";
+import {cloneDeep} from "lodash";
 
 export class NodeToNodeNetworkManager {
   constructor(private readonly eventBus: EventBus) {}
@@ -16,12 +17,13 @@ export class NodeToNodeNetworkManager {
   }
 
   sendRequest(request: NodeToNodeRequest): void {
+    const toAvoidSharingMemoryBetweenNodes = cloneDeep(request);
     if (
       this.isConnectionEnabled(request.senderNodeId, request.receiverNodeId)
     ) {
       this.eventBus.emitEvent(
         NetworkRequestEventBuilder.aNetworkRequestEvent()
-          .withNetworkRequest(request)
+          .withNetworkRequest(toAvoidSharingMemoryBetweenNodes)
           .build()
       );
     } else {
