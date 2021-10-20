@@ -29,6 +29,7 @@ export class LeaderState extends NodeAlgorithmState {
           LogRequestBuilder.aLogRequest()
             .withSenderNodeId(this.nodeId)
             .withReceiverNodeId(follower)
+            .withTerm(this.nodeMemoryState.term)
             .withLogEntries(this.getLogEntries())
             .build()
         )

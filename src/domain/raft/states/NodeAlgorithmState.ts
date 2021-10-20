@@ -121,7 +121,10 @@ export abstract class NodeAlgorithmState {
   }
 
   protected onLogRequest(request: LogRequest): void {
-    // do nothing
+    if(request.term! > this.nodeMemoryState.term) {
+      this.nodeMemoryState.term = request.term!;
+      this.changeState("follower");
+    }
   }
 
   protected onLogResponse(response: LogResponse): void {

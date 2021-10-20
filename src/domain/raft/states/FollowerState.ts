@@ -19,17 +19,23 @@ export class FollowerState extends NodeAlgorithmState {
   }
 
   onLogRequest(request: LogRequest): void {
-    console.log(
-      `node ${this.nodeId} received logRequest from ${request.senderNodeId} (destination: ${request.receiverNodeId})`
-    );
-    super.onLogRequest(request);
-    this.setLogs(request.entries);
+    if (request.term == this.nodeMemoryState.term) {
+      console.log(
+        `node ${this.nodeId} received logRequest from ${request.senderNodeId} (destination: ${request.receiverNodeId})`
+      );
+      super.onLogRequest(request);
+      this.setLogs(request.entries);
 
-    this.cancelTimers();
-    this.startLeaderTimeoutTimer();
+      this.cancelTimers();
+      this.startLeaderTimeoutTimer();
 
-    // TODO enlever quand on aura l'affichage
-    this.printLogs();
+      // TODO enlever quand on aura l'affichage
+      this.printLogs();
+    } else {
+      console.log(
+        `node ${this.nodeId} received but ignored logRequest from ${request.senderNodeId} (destination: ${request.receiverNodeId}), because the term was inferior`
+      );
+    }
   }
 
   onBroadcastRequest(request: BroadcastRequest): void {
