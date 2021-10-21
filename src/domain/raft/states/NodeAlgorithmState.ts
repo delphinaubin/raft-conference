@@ -7,14 +7,13 @@ import {
   BroadcastRequest,
   LogRequest,
   LogResponse,
-  NetworkRequest, NodeToNodeRequest,
+  NetworkRequest,
+  NodeToNodeRequest,
   VoteRequest,
   VoteResponse,
 } from "@/domain/network/NetworkRequest";
-import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
-import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
 import { LogEntry } from "@/domain/log/LogEntry";
-import {NodeToNodeNetworkManager} from "@/domain/network/NodeToNodeNetworkManager";
+import { NodeToNodeNetworkManager } from "@/domain/network/NodeToNodeNetworkManager";
 
 export abstract class NodeAlgorithmState {
   constructor(
@@ -121,7 +120,7 @@ export abstract class NodeAlgorithmState {
   }
 
   protected onLogRequest(request: LogRequest): void {
-    if(request.term! > this.nodeMemoryState.term) {
+    if (request.term! > this.nodeMemoryState.term) {
       this.nodeMemoryState.term = request.term!;
       this.changeState("follower");
     }

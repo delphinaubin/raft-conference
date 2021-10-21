@@ -1,10 +1,10 @@
 import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
 import { VoteRequestBuilder } from "@/domain/network/VoteRequestBuilder";
 import {
-  LogRequest,
   VoteRequest,
   VoteResponse,
 } from "@/domain/network/NetworkRequest";
+import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
 
 export class CandidateState extends NodeAlgorithmState {
   name = "candidate" as const;
@@ -12,6 +12,10 @@ export class CandidateState extends NodeAlgorithmState {
   onEnterInState(): void {
     super.onEnterInState();
 
+    this.startElectionProcess();
+  }
+
+  startElectionProcess(): void {
     this.cancelTimers();
     this.nodeMemoryState.term++;
     this.nodeMemoryState.votesReceived = [this.nodeId];
@@ -25,6 +29,7 @@ export class CandidateState extends NodeAlgorithmState {
             .withTerm(this.nodeMemoryState.term)
             .withSenderNodeId(this.nodeId)
             .withReceiverNodeId(nodeId)
+            .withLogLength(this.getLogEntries().length)
             .build()
         );
       });
@@ -44,15 +49,34 @@ export class CandidateState extends NodeAlgorithmState {
   }
 
   onVoteRequest(request: VoteRequest): void {
+    let termWasUpdated = false;
+    const logOk = request.logLength! >= this.getLogEntries().length;
     if (request.term! > this.nodeMemoryState.term) {
       this.nodeMemoryState.term = request.term!;
       this.changeState("follower");
+      console.log(
+        `Changed state to follower on node ${this.nodeId} after receiving a vote request with greater term`
+      );
+      termWasUpdated = true;
+    }
+    if (termWasUpdated && logOk) {
+      console.log(
+        `Node ${this.nodeId} (previously candidate) has updated it's term and sends a granted voteResponse`
+      );
+      this.nodeMemoryState.votedFor = request.senderNodeId;
+      this.sendNetworkRequest(
+        VoteResponseBuilder.aVoteResponse()
+          .withSenderNodeId(this.nodeId)
+          .withReceiverNodeId(request.senderNodeId)
+          .withGranted(true)
+          .build()
+      );
     }
   }
 
   startElectionTimeoutTimer(): void {
     this.startTimerWithRandomDuration(10_000, "election timeout").then(() => {
-      this.changeState("candidate");
+      this.startElectionProcess();
     });
   }
 }

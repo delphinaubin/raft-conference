@@ -66,7 +66,8 @@ export class FollowerState extends NodeAlgorithmState {
     }
     if (
       this.nodeMemoryState.votedFor == null &&
-      request.term == this.nodeMemoryState.term
+      request.term == this.nodeMemoryState.term &&
+      request.logLength! >= this.getLogEntries().length
     ) {
       this.nodeMemoryState.votedFor = request.senderNodeId;
       this.sendNetworkRequest(
