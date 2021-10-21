@@ -2,7 +2,6 @@ import { LogRequest } from "@/domain/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
 import { LogEntry } from "@/domain/log/LogEntry";
 
-// TODO leaderId = senderId so it's not necessary and should be removed
 export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;
   private leaderId?: string;
@@ -47,20 +46,19 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
 
   build(): LogRequest {
     if (!this.leaderId) {
-      throw new Error("Cannot build a log request without leaderId");
+      this.leaderId = "-1";
     }
-
     if (this.term === undefined) {
-      throw new Error("Cannot build a log request without term");
+      this.term = -1;
     }
     if (this.logLength === undefined) {
-      throw new Error("Cannot build a log request without logLength ");
+      this.logLength = 0;
     }
     if (this.logTerm === undefined) {
-      throw new Error("Cannot build a log request without logTerm");
+      this.logTerm = 0;
     }
     if (this.leaderCommit === undefined) {
-      throw new Error("Cannot build a log request without leaderCommit");
+      this.leaderCommit = 0;
     }
 
     return {

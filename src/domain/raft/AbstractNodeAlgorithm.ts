@@ -1,14 +1,14 @@
 import { RaftNodeState } from "@/domain/RaftNode";
-import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
+import { AbstractNodeAlgorithmState } from "@/domain/raft/states/AbstractNodeAlgorithmState";
 import { EventBus } from "@/domain/event/EventBus";
 import { LogEntry } from "@/domain/log/LogEntry";
 
-type NodeAlgorithmStates = Record<RaftNodeState, NodeAlgorithmState>;
+type NodeAlgorithmStates = Record<RaftNodeState, AbstractNodeAlgorithmState>;
 
 export interface NodeMemoryState {
   term: number;
   votedFor?: string;
-  votesReceived: string[];
+  votesReceived: Set<string>;
   leader?: string;
   sentLength: { [nodeId: string]: number };
   ackedLength: { [nodeId: string]: number };
@@ -17,13 +17,12 @@ export interface NodeMemoryState {
 }
 
 export abstract class AbstractNodeAlgorithm {
-  protected currentState!: NodeAlgorithmState;
+  protected currentState!: AbstractNodeAlgorithmState;
   constructor(
     protected readonly allStates: NodeAlgorithmStates,
     private readonly eventBus: EventBus,
     public readonly id: string,
     protected readonly nodeMemoryState: NodeMemoryState,
-    // TODO this is reported as unused, but why?
     private readonly allNodesIds: string[]
   ) {
     allNodesIds.forEach((nodeId) => {

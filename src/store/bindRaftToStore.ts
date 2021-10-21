@@ -16,7 +16,7 @@ export const nodesToCreate: RaftNode[] = [
 
 const INITIAL_NODE_MEMORY_STATE = () => ({
   term: 0,
-  votesReceived: [],
+  votesReceived: new Set<string>(),
   sentLength: {},
   ackedLength: {},
   log: [],
