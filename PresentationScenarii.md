@@ -105,14 +105,15 @@ Node 2 logLength 2 aussi mais divergent
 
 
 # TODO
-[ ] Rendre les valeurs optionels dans les builders pour coder petit à petit
+[X] Rendre les valeurs optionels dans les builders pour coder petit à petit
+[X] Sur le node manager j'affiche les logs du node et logLength
 [ ] Faire un tableau d'état de node et afficher
-- les timers
+- les timers ⚠️
 - les logs
 - votedFor
 - Vote received
+[ ] Etre capable de revenir dans le passé
 [ ] Sur le nodemanager j'afficher les timers en cours et je peux forcer la fin d'un timer
-[ ] Sur le node manager j'affiche les logs du node et logLength
 
 
 # Idée pres
