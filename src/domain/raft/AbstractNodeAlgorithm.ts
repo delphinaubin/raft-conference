@@ -1,20 +1,9 @@
 import { RaftNodeState } from "@/domain/RaftNode";
 import { AbstractNodeAlgorithmState } from "@/domain/raft/states/AbstractNodeAlgorithmState";
 import { EventBus } from "@/domain/event/EventBus";
-import { LogEntry } from "@/domain/log/LogEntry";
+import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
 
 type NodeAlgorithmStates = Record<RaftNodeState, AbstractNodeAlgorithmState>;
-
-export interface NodeMemoryState {
-  term: number;
-  votedFor?: string;
-  votesReceived: Set<string>;
-  leader?: string;
-  sentLength: { [nodeId: string]: number };
-  ackedLength: { [nodeId: string]: number };
-  commitLength: number;
-  log: LogEntry[];
-}
 
 export abstract class AbstractNodeAlgorithm {
   protected currentState!: AbstractNodeAlgorithmState;

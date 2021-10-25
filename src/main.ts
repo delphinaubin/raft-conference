@@ -5,7 +5,18 @@ import store from "./store";
 import VNetworkGraph from "v-network-graph";
 import "v-network-graph/lib/style.css";
 import "ant-design-vue/dist/antd.css";
-import { Button, Drawer, Form, Input, Popover, Timeline } from "ant-design-vue";
+import {
+  Button,
+  Col,
+  Drawer,
+  Form,
+  Input,
+  Popover,
+  Row,
+  Switch,
+  Table,
+  Timeline,
+} from "ant-design-vue";
 
 const app = createApp(App);
 app.use(store);
@@ -17,4 +28,13 @@ app.use(Button);
 app.use(Timeline);
 app.use(Popover);
 app.use(Drawer);
+app.use(Row);
+app.use(Col);
+app.use(Table);
+app.use(Switch);
 app.mount("#app");
+
+// To call manually in the console to stop debugging
+(window as any).stopDebug = () => {
+  (window as any).isDebugModeActivated = false;
+};

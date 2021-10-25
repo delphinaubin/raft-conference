@@ -2,7 +2,6 @@ import { RaftNodeState } from "@/domain/RaftNode";
 import { EventBus } from "@/domain/event/EventBus";
 import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
 import { TimerManager } from "@/domain/timer/TimerManager";
-import { NodeMemoryState } from "@/domain/raft/AbstractNodeAlgorithm";
 import {
   BroadcastRequest,
   LogRequest,
@@ -20,6 +19,7 @@ import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
 import { LogRequestBuilder } from "@/domain/network/LogRequestBuilder";
 import { VoteRequestBuilder } from "@/domain/network/VoteRequestBuilder";
 import { RelayBroadcastRequestBuilder } from "@/domain/network/RelayBroadcastRequestBuilder";
+import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
 
 type NetworkBuilder =
   | LogResponseBuilder

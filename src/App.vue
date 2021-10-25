@@ -1,14 +1,15 @@
 <template>
-  <h1>Raft algorithm demo</h1>
-  <a-button type="primary" @click="resetSelection">Reset selection</a-button>
+  <Header />
   <NodeVisualizer
     :nodes="nodes"
     :networkLinks="networkLinks"
     :selected-node="selectedNode"
     :selected-network-link="selectedNetworkLink"
+    :nodes-memory-state="allNodesMemoryState"
     @selected-node-change="selectedNodeChange"
     @selected-network-link-change="selectedNetworkLinkChange"
   ></NodeVisualizer>
+
   <NodeManagement
     :selected-node="selectedNode"
     @close-drawer="resetSelection"
@@ -30,16 +31,19 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import NodeVisualizer from "./components/NodeVisualizer/NodeVisualizer.vue";
+import NodeVisualizer from "@/components/NodeVisualizer/NodeVisualizer.vue";
 import { RaftNode } from "@/domain/RaftNode";
 import { NetworkLink } from "@/domain/NetworkLink";
 import store, { HistoryEntry } from "@/store";
 import EventHistory from "@/components/EventHistory/EventHistory.vue";
 import NodeManagement from "@/components/NodeManagement/NodeManagement.vue";
 import NetworkManagement from "@/components/NetworkManagement/NetworkManagement.vue";
+import Header from "@/components/header/Header.vue";
+import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
 
 @Options({
   components: {
+    Header,
     NetworkManagement,
     NodeManagement,
     EventHistory,
@@ -69,6 +73,10 @@ export default class App extends Vue {
 
   get nodeNamesById(): Map<string, string> {
     return new Map(store.state.nodes.map((node) => [node.id, node.name]));
+  }
+
+  get allNodesMemoryState(): { nodeId: string; memoryState: NodeMemoryState }[] {
+    return store.state.nodesMemoryState;
   }
 
   resetSelection(): void {
@@ -123,11 +131,3 @@ export default class App extends Vue {
   }
 }
 </script>
-
-<style>
-#app {
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>

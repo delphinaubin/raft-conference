@@ -21,6 +21,10 @@ export class EventBus {
   private eventEmissionNumber = 0;
 
   emitEvent(event: RaftEvent): void {
+    if ((window as any).isDebugModeActivated) {
+      // eslint-disable-next-line no-debugger
+      debugger;
+    }
     const idToEmit = this.eventEmissionNumber++;
     Array.from(this.subscribers.values()).forEach((subscriber) => {
       if (event.isAsyncEvent) {
