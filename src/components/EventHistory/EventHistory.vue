@@ -36,8 +36,8 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons-vue";
 import { NODE_STATE_STYLE } from "@/components/NodeVisualizer/nodeStateStyle";
-import { TimerStatus } from "@/domain/event/TimerEventBuilder";
-import { isRequestIsNodeToNodeRequest } from "@/domain/network/NetworkRequest";
+import { TimerStatus } from "@/domain/framework/event/TimerEventBuilder";
+import { isRequestIsNodeToNodeRequest } from "@/domain/framework/network/NetworkRequest";
 
 @Options({
   components: {

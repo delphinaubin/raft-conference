@@ -1,9 +1,9 @@
 import {
   BroadcastRequest,
   RelayBroadcastRequest,
-} from "@/domain/network/NetworkRequest";
-import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
-import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
+} from "@/domain/framework/network/NetworkRequest";
+import { NetworkRequestBuilder } from "@/domain/framework/network/NetworkRequestBuilder";
+import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/NodeToNodeNetworkRequestBuilder";
 
 export class RelayBroadcastRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   private log?: number;

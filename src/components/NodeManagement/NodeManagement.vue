@@ -56,8 +56,8 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { RaftNode } from "@/domain/RaftNode";
-import { NetworkLink } from "@/domain/NetworkLink";
+import { RaftNode } from "@/domain/framework/RaftNode";
+import { NetworkLink } from "@/domain/framework/NetworkLink";
 
 @Options({
   props: {

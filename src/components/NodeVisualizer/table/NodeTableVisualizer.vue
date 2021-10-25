@@ -31,12 +31,12 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { RaftNode, RaftNodeState } from "@/domain/RaftNode";
+import { RaftNode, RaftNodeState } from "@/domain/framework/RaftNode";
 import {
   NodeStyle,
   NODE_STATE_STYLE,
 } from "@/components/NodeVisualizer/nodeStateStyle";
-import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
+import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryStateManager";
 import { cloneDeep } from "lodash";
 import { EyeOutlined } from "@ant-design/icons-vue";
 @Options({

@@ -66,9 +66,9 @@
 
 <script lang="ts">
 import { Edge, EventHandlers, Layouts, Node } from "v-network-graph";
-import { RaftNode, RaftNodeState } from "@/domain/RaftNode";
+import { RaftNode, RaftNodeState } from "@/domain/framework/RaftNode";
 import { Options, Vue } from "vue-class-component";
-import { NetworkLink, NetworkLinkStatus } from "@/domain/NetworkLink";
+import { NetworkLink, NetworkLinkStatus } from "@/domain/framework/NetworkLink";
 import { getLayoutFromNodeIds } from "@/components/NodeVisualizer/graph/getLayoutFromNodeIds";
 import {
   NODE_STATE_STYLE,

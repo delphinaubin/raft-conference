@@ -1,5 +1,5 @@
-import { AbstractNodeToNodeNetworkRequest } from "@/domain/network/NetworkRequest";
-import { NetworkRequestBuilder } from "@/domain/network/NetworkRequestBuilder";
+import { AbstractNodeToNodeNetworkRequest } from "@/domain/framework/network/NetworkRequest";
+import { NetworkRequestBuilder } from "@/domain/framework/network/NetworkRequestBuilder";
 
 export abstract class NodeToNodeNetworkRequestBuilder extends NetworkRequestBuilder {
   protected senderNodeId?: string;

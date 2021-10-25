@@ -1,6 +1,6 @@
-import { LogRequest } from "@/domain/network/NetworkRequest";
-import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
-import { LogEntry } from "@/domain/log/LogEntry";
+import { LogRequest } from "@/domain/framework/network/NetworkRequest";
+import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/NodeToNodeNetworkRequestBuilder";
+import { LogEntry } from "@/domain/framework/log/LogEntry";
 
 export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;

@@ -1,4 +1,4 @@
-import { LogEntry } from "@/domain/log/LogEntry";
+import { LogEntry } from "@/domain/framework/log/LogEntry";
 
 export interface AbstractNetworkRequest {
   receiverNodeId: string;

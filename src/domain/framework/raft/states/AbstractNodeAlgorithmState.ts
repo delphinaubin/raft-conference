@@ -1,7 +1,7 @@
-import { RaftNodeState } from "@/domain/RaftNode";
-import { EventBus } from "@/domain/event/EventBus";
-import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
-import { TimerManager } from "@/domain/timer/TimerManager";
+import { RaftNodeState } from "@/domain/framework/RaftNode";
+import { EventBus } from "@/domain/framework/event/EventBus";
+import { ChangeStateEventBuilder } from "@/domain/framework/event/ChangeStateEventBuilder";
+import { TimerManager } from "@/domain/framework/timer/TimerManager";
 import {
   BroadcastRequest,
   LogRequest,
@@ -9,16 +9,16 @@ import {
   NetworkRequest,
   VoteRequest,
   VoteResponse,
-} from "@/domain/network/NetworkRequest";
-import { NodeToNodeNetworkManager } from "@/domain/network/NodeToNodeNetworkManager";
+} from "@/domain/framework/network/NetworkRequest";
+import { NodeToNodeNetworkManager } from "@/domain/framework/network/NodeToNodeNetworkManager";
 import { cloneDeep } from "lodash";
-import { LogEntry } from "@/domain/log/LogEntry";
-import { LogResponseBuilder } from "@/domain/network/LogResponseBuilder";
-import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
-import { LogRequestBuilder } from "@/domain/network/LogRequestBuilder";
-import { VoteRequestBuilder } from "@/domain/network/VoteRequestBuilder";
-import { RelayBroadcastRequestBuilder } from "@/domain/network/RelayBroadcastRequestBuilder";
-import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
+import { LogEntry } from "@/domain/framework/log/LogEntry";
+import { LogResponseBuilder } from "@/domain/framework/network/LogResponseBuilder";
+import { VoteResponseBuilder } from "@/domain/framework/network/VoteResponseBuilder";
+import { LogRequestBuilder } from "@/domain/framework/network/LogRequestBuilder";
+import { VoteRequestBuilder } from "@/domain/framework/network/VoteRequestBuilder";
+import { RelayBroadcastRequestBuilder } from "@/domain/framework/network/RelayBroadcastRequestBuilder";
+import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryStateManager";
 
 type ConcreteNodeToNodeNetworkRequestBuilder =
   | LogResponseBuilder

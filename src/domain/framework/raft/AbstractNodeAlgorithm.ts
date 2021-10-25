@@ -1,7 +1,7 @@
-import { RaftNodeState } from "@/domain/RaftNode";
-import { AbstractNodeAlgorithmState } from "@/domain/raft/states/AbstractNodeAlgorithmState";
-import { EventBus } from "@/domain/event/EventBus";
-import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
+import { RaftNodeState } from "@/domain/framework/RaftNode";
+import { AbstractNodeAlgorithmState } from "@/domain/framework/raft/states/AbstractNodeAlgorithmState";
+import { EventBus } from "@/domain/framework/event/EventBus";
+import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryStateManager";
 
 type NodeAlgorithmStates = Record<RaftNodeState, AbstractNodeAlgorithmState>;
 

@@ -1,19 +1,13 @@
-import { NodeToNodeNetworkManager } from "@/domain/network/NodeToNodeNetworkManager";
-import { RaftNode } from "@/domain/RaftNode";
-import { NodeAlgorithm } from "@/domain/raft/NodeAlgorithm";
-import { CandidateState } from "@/domain/raft/states/CandidateState";
-import { FollowerState } from "@/domain/raft/states/FollowerState";
-import { LeaderState } from "@/domain/raft/states/LeaderState";
-import { OffState } from "@/domain/raft/states/OffState";
-import { EventBus } from "@/domain/event/EventBus";
-import { TimerManager } from "@/domain/timer/TimerManager";
-import { NodeMemoryStateManager } from "@/domain/memory-state/NodeMemoryStateManager";
-
-export const nodesToCreate: RaftNode[] = [
-  { id: "1", name: "Node 1", state: "off" },
-  { id: "2", name: "Node 2", state: "off" },
-  { id: "3", name: "Node 3", state: "off" },
-];
+import { NodeToNodeNetworkManager } from "@/domain/framework/network/NodeToNodeNetworkManager";
+import { NodeAlgorithm } from "@/domain/conf-land/NodeAlgorithm";
+import { CandidateState } from "@/domain/conf-land/states/CandidateState";
+import { FollowerState } from "@/domain/conf-land/states/FollowerState";
+import { LeaderState } from "@/domain/conf-land/states/LeaderState";
+import { OffState } from "@/domain/conf-land/states/OffState";
+import { EventBus } from "@/domain/framework/event/EventBus";
+import { TimerManager } from "@/domain/framework/timer/TimerManager";
+import { NodeMemoryStateManager } from "@/domain/framework/memory-state/NodeMemoryStateManager";
+import { nodesToCreate } from "@/domain/conf-land/nodesToCreate";
 
 export const eventBus = new EventBus();
 

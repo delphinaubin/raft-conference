@@ -1,4 +1,4 @@
-import { RaftNodeState } from "@/domain/RaftNode";
+import { RaftNodeState } from "@/domain/framework/RaftNode";
 
 export interface NodeStyle {
   icon: string;

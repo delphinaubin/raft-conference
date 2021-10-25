@@ -30,8 +30,8 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { NetworkLink } from "@/domain/NetworkLink";
-import { RaftNode } from "@/domain/RaftNode";
+import { NetworkLink } from "@/domain/framework/NetworkLink";
+import { RaftNode } from "@/domain/framework/RaftNode";
 import {
   NODE_STATE_STYLE,
   NodeStyle,

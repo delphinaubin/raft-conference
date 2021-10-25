@@ -8,7 +8,7 @@
 </template>
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { RaftNode } from "@/domain/RaftNode";
+import { RaftNode } from "@/domain/framework/RaftNode";
 import {
   NODE_STATE_STYLE,
   NodeStyle,

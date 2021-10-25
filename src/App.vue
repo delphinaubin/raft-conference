@@ -34,14 +34,14 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import NodeVisualizer from "@/components/NodeVisualizer/NodeVisualizer.vue";
-import { RaftNode } from "@/domain/RaftNode";
-import { NetworkLink } from "@/domain/NetworkLink";
+import { RaftNode } from "@/domain/framework/RaftNode";
+import { NetworkLink } from "@/domain/framework/NetworkLink";
 import store, { HistoryEntry } from "@/store";
 import EventHistory from "@/components/EventHistory/EventHistory.vue";
 import NodeManagement from "@/components/NodeManagement/NodeManagement.vue";
 import NetworkManagement from "@/components/NetworkManagement/NetworkManagement.vue";
 import Header from "@/components/header/Header.vue";
-import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
+import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryStateManager";
 
 @Options({
   components: {

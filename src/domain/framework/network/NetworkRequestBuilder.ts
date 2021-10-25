@@ -1,4 +1,4 @@
-import { AbstractNetworkRequest } from "@/domain/network/NetworkRequest";
+import { AbstractNetworkRequest } from "@/domain/framework/network/NetworkRequest";
 
 export abstract class NetworkRequestBuilder {
   protected receiverNodeId?: string;

@@ -1,6 +1,6 @@
-import { NetworkEvent } from "@/domain/event/NetworkEventBuilder";
-import { ChangeStateEvent } from "@/domain/event/ChangeStateEventBuilder";
-import { TimerEvent } from "@/domain/event/TimerEventBuilder";
+import { NetworkEvent } from "@/domain/framework/event/NetworkEventBuilder";
+import { ChangeStateEvent } from "@/domain/framework/event/ChangeStateEventBuilder";
+import { TimerEvent } from "@/domain/framework/event/TimerEventBuilder";
 
 export type RaftEvent = NetworkEvent | ChangeStateEvent | TimerEvent; // TODO DAU : add the | all new event types
 type Subscriber = (payload: {

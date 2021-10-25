@@ -1,4 +1,4 @@
-import { RaftNodeState } from "@/domain/RaftNode";
+import { RaftNodeState } from "@/domain/framework/RaftNode";
 
 export interface ChangeStateEvent {
   type: "change-state";

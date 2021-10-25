@@ -1,4 +1,4 @@
-import { NetworkRequest } from "@/domain/network/NetworkRequest";
+import { NetworkRequest } from "@/domain/framework/network/NetworkRequest";
 
 export interface NetworkEvent {
   type: "network";

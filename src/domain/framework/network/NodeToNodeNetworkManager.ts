@@ -1,6 +1,6 @@
-import { EventBus } from "@/domain/event/EventBus";
-import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
-import { NodeToNodeRequest } from "@/domain/network/NetworkRequest";
+import { EventBus } from "@/domain/framework/event/EventBus";
+import { NetworkRequestEventBuilder } from "@/domain/framework/event/NetworkEventBuilder";
+import { NodeToNodeRequest } from "@/domain/framework/network/NetworkRequest";
 import { cloneDeep } from "lodash";
 
 export class NodeToNodeNetworkManager {

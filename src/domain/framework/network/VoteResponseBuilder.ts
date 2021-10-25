@@ -1,5 +1,5 @@
-import { VoteRequest, VoteResponse } from "@/domain/network/NetworkRequest";
-import { NodeToNodeNetworkRequestBuilder } from "@/domain/network/NodeToNodeNetworkRequestBuilder";
+import { VoteRequest, VoteResponse } from "@/domain/framework/network/NetworkRequest";
+import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/NodeToNodeNetworkRequestBuilder";
 
 export class VoteResponseBuilder extends NodeToNodeNetworkRequestBuilder {
   private term?: number;

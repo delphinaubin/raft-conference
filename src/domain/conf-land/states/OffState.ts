@@ -1,5 +1,5 @@
-import { AbstractNodeAlgorithmState } from "@/domain/raft/states/AbstractNodeAlgorithmState";
-import { NetworkRequest } from "@/domain/network/NetworkRequest";
+import { AbstractNodeAlgorithmState } from "@/domain/framework/raft/states/AbstractNodeAlgorithmState";
+import { NetworkRequest } from "@/domain/framework/network/NetworkRequest";
 
 export class OffState extends AbstractNodeAlgorithmState {
   name = "off" as const;

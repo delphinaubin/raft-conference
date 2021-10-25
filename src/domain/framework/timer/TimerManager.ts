@@ -1,5 +1,5 @@
-import { EventBus } from "@/domain/event/EventBus";
-import { TimerEventBuilder } from "@/domain/event/TimerEventBuilder";
+import { EventBus } from "@/domain/framework/event/EventBus";
+import { TimerEventBuilder } from "@/domain/framework/event/TimerEventBuilder";
 
 interface Timer {
   starterNodeId: string;

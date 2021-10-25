@@ -1,22 +1,23 @@
 import { createStore } from "vuex";
-import { RaftNode, RaftNodeState } from "@/domain/RaftNode";
-import { NetworkLink, NetworkLinkStatus } from "@/domain/NetworkLink";
+import { RaftNode, RaftNodeState } from "@/domain/framework/RaftNode";
+import { NetworkLink, NetworkLinkStatus } from "@/domain/framework/NetworkLink";
 import {
   eventBus,
   networkManager,
   nodeMemoryStateManager,
   nodes,
-  nodesToCreate,
+
 } from "@/store/bindRaftToStore";
-import { RaftEvent } from "@/domain/event/EventBus";
+import { RaftEvent } from "@/domain/framework/event/EventBus";
 import { getNetworkLinksBetweenNodes } from "@/store/getNetworkLinksBetweenNodes";
-import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
-import { BroadcastRequestBuilder } from "@/domain/network/BroadcastRequestBuilder";
-import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
+import { ChangeStateEventBuilder } from "@/domain/framework/event/ChangeStateEventBuilder";
+import { BroadcastRequestBuilder } from "@/domain/framework/network/BroadcastRequestBuilder";
+import { NetworkRequestEventBuilder } from "@/domain/framework/event/NetworkEventBuilder";
 import {
   INITIAL_NODE_MEMORY_STATE,
   NodeMemoryState,
-} from "@/domain/memory-state/NodeMemoryStateManager";
+} from "@/domain/framework/memory-state/NodeMemoryStateManager";
+import { nodesToCreate } from "@/domain/conf-land/nodesToCreate";
 
 export interface HistoryEntry {
   raftEvent: RaftEvent;
