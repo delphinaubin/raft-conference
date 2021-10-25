@@ -7,7 +7,6 @@ import {
   LogRequest,
   LogResponse,
   NetworkRequest,
-  NodeToNodeRequest,
   VoteRequest,
   VoteResponse,
 } from "@/domain/network/NetworkRequest";
@@ -21,7 +20,7 @@ import { VoteRequestBuilder } from "@/domain/network/VoteRequestBuilder";
 import { RelayBroadcastRequestBuilder } from "@/domain/network/RelayBroadcastRequestBuilder";
 import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
 
-type NetworkBuilder =
+type ConcreteNodeToNodeNetworkRequestBuilder =
   | LogResponseBuilder
   | VoteResponseBuilder
   | LogRequestBuilder
@@ -76,17 +75,17 @@ export abstract class AbstractNodeAlgorithmState {
     );
   }
 
-  onReceiveNetworkRequest(_request: NetworkRequest): void {
-    if (_request.type == "vote-request") {
-      this.onVoteRequest(_request);
-    } else if (_request.type == "vote-response") {
-      this.onVoteResponse(_request);
-    } else if (_request.type == "log-request") {
-      this.onLogRequest(_request);
-    } else if (_request.type == "log-response") {
-      this.onLogResponse(_request);
-    } else if (_request.type == "broadcast-request") {
-      this.onBroadcastRequest(_request);
+  onReceiveNetworkRequest(request: NetworkRequest): void {
+    if (request.type == "vote-request") {
+      this.onVoteRequest(request);
+    } else if (request.type == "vote-response") {
+      this.onVoteResponse(request);
+    } else if (request.type == "log-request") {
+      this.onLogRequest(request);
+    } else if (request.type == "log-response") {
+      this.onLogResponse(request);
+    } else if (request.type == "broadcast-request") {
+      this.onBroadcastRequest(request);
     }
   }
 
@@ -119,20 +118,23 @@ export abstract class AbstractNodeAlgorithmState {
     // DO NOTHING
   }
 
-  protected sendNetworkRequest(request: NodeToNodeRequest): void {
-    this.networkManager.sendRequest(request);
+  protected sendNetworkRequest(
+    requestBuilder: ConcreteNodeToNodeNetworkRequestBuilder
+  ): void {
+    this.networkManager.sendRequest(
+      requestBuilder.withSenderNodeId(this.nodeId).build()
+    );
   }
 
   protected sendNetworkRequestToAllOtherNodes(
-    networkRequestBuilder: NetworkBuilder
+    networkRequestBuilder: ConcreteNodeToNodeNetworkRequestBuilder
   ): void {
     this.allNodesIds
       .filter((otherNodeId) => otherNodeId != this.nodeId)
       .forEach((otherNodeId) => {
-        const message = cloneDeep(networkRequestBuilder)
-          .withSenderNodeId(this.nodeId)
-          .withReceiverNodeId(otherNodeId)
-          .build();
+        const message = cloneDeep(networkRequestBuilder).withReceiverNodeId(
+          otherNodeId
+        );
         this.sendNetworkRequest(message);
       });
   }
@@ -145,18 +147,21 @@ export abstract class AbstractNodeAlgorithmState {
   }
 
   protected startTimerWithRandomDuration(
-    duration: number,
-    label: string
+    label: string,
+    minimumTime = 3_000
   ): Promise<void> {
-    const randomDuration = parseInt(this.nodeId) * 10_000;
+    const randomDuration = minimumTime + parseInt(this.nodeId) * 4_000;
     return this.startTimer(randomDuration, label);
   }
 
-  protected replaceMyLogsWith(entries: LogEntry[]): void {
+  protected replaceMyLogWith(entries: LogEntry[]): void {
     this.nodeMemoryState.log = entries;
   }
 
   protected appendNewLog(log: number): void {
-    this.nodeMemoryState.log.push({ value: log, term: 0 });
+    this.nodeMemoryState.log = [
+      ...this.nodeMemoryState.log,
+      { value: log, term: 0 },
+    ];
   }
 }

@@ -50,7 +50,7 @@ const store = createStore({
         if (!state.nodesMemoryState.some(({ nodeId }) => nodeId === node.id)) {
           state.nodesMemoryState.push({
             nodeId: node.id,
-            memoryState: INITIAL_NODE_MEMORY_STATE,
+            memoryState: INITIAL_NODE_MEMORY_STATE(),
           });
         }
       });
