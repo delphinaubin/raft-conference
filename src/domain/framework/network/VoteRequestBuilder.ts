@@ -2,9 +2,9 @@ import { VoteRequest } from "@/domain/framework/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/NodeToNodeNetworkRequestBuilder";
 
 export class VoteRequestBuilder extends NodeToNodeNetworkRequestBuilder {
-  private term?: number;
-  private logLength?: number;
-  private logTerm?: number;
+  private term?: number = 0;
+  private logLength?: number = 0;
+  private logTerm?: number = 0;
 
   static aVoteRequest(): VoteRequestBuilder {
     return new VoteRequestBuilder();
@@ -23,7 +23,7 @@ export class VoteRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   }
 
   build(): VoteRequest {
-    if (!this.term) {
+    if (this.term === undefined) {
       throw new Error("Cannot build a vote request without term");
     }
     if (this.logLength == undefined) {

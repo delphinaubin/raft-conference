@@ -1,10 +1,10 @@
-import { VoteRequest, VoteResponse } from "@/domain/framework/network/NetworkRequest";
+import { VoteResponse } from "@/domain/framework/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/NodeToNodeNetworkRequestBuilder";
 
 export class VoteResponseBuilder extends NodeToNodeNetworkRequestBuilder {
-  private term?: number;
+  private term?: number = 0;
   private granted?: boolean;
-  private voterId?: string;
+  private voterId?: string = "";
 
   static aVoteResponse(): VoteResponseBuilder {
     return new VoteResponseBuilder();
@@ -25,10 +25,10 @@ export class VoteResponseBuilder extends NodeToNodeNetworkRequestBuilder {
   }
 
   build(): VoteResponse {
-    if (!this.voterId) {
+    if (this.voterId === undefined) {
       throw new Error("Cannot build a vote response without voterId");
     }
-    if (!this.term) {
+    if (this.term === undefined) {
       throw new Error("Cannot build a vote response without term");
     }
 
