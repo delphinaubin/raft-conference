@@ -2,7 +2,6 @@ import { RaftNodeState } from "@/domain/RaftNode";
 import { EventBus } from "@/domain/event/EventBus";
 import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
 import { TimerManager } from "@/domain/timer/TimerManager";
-import { NodeMemoryState } from "@/domain/raft/AbstractNodeAlgorithm";
 import {
   BroadcastRequest,
   LogRequest,
@@ -14,6 +13,7 @@ import {
 } from "@/domain/network/NetworkRequest";
 import { VoteResponseBuilder } from "@/domain/network/VoteResponseBuilder";
 import { NodeToNodeNetworkManager } from "@/domain/network/NodeToNodeNetworkManager";
+import { NodeMemoryState } from "@/domain/memory-state/NodeMemoryStateManager";
 
 export abstract class NodeAlgorithmState {
   constructor(

@@ -1,6 +1,7 @@
 import { EventBus } from "@/domain/event/EventBus";
 import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
 import { NodeToNodeRequest } from "@/domain/network/NetworkRequest";
+import { cloneDeep } from "lodash";
 
 export class NodeToNodeNetworkManager {
   constructor(private readonly eventBus: EventBus) {}
@@ -21,7 +22,7 @@ export class NodeToNodeNetworkManager {
     ) {
       this.eventBus.emitEvent(
         NetworkRequestEventBuilder.aNetworkRequestEvent()
-          .withNetworkRequest(request)
+          .withNetworkRequest(cloneDeep(request))
           .build()
       );
     }

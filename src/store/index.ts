@@ -4,6 +4,7 @@ import { NetworkLink, NetworkLinkStatus } from "@/domain/NetworkLink";
 import {
   eventBus,
   networkManager,
+  nodeMemoryStateManager,
   nodes,
   nodesToCreate,
 } from "@/store/bindRaftToStore";
@@ -12,6 +13,10 @@ import { getNetworkLinksBetweenNodes } from "@/store/getNetworkLinksBetweenNodes
 import { ChangeStateEventBuilder } from "@/domain/event/ChangeStateEventBuilder";
 import { BroadcastRequestBuilder } from "@/domain/network/BroadcastRequestBuilder";
 import { NetworkRequestEventBuilder } from "@/domain/event/NetworkEventBuilder";
+import {
+  INITIAL_NODE_MEMORY_STATE,
+  NodeMemoryState,
+} from "@/domain/memory-state/NodeMemoryStateManager";
 
 export interface HistoryEntry {
   raftEvent: RaftEvent;
@@ -24,6 +29,7 @@ export interface State {
   networkLinks: NetworkLink[];
   selectedNode: RaftNode | null;
   selectedNetworkLink: NetworkLink | null;
+  nodesMemoryState: { nodeId: string; memoryState: NodeMemoryState }[];
 }
 
 const initialState: State = {
@@ -32,6 +38,7 @@ const initialState: State = {
   history: [],
   selectedNode: null,
   selectedNetworkLink: null,
+  nodesMemoryState: [],
 };
 
 const store = createStore({
@@ -39,6 +46,37 @@ const store = createStore({
   mutations: {
     setNodes(state, nodes: RaftNode[]) {
       state.nodes = nodes;
+      nodes.forEach((node) => {
+        if (!state.nodesMemoryState.some(({ nodeId }) => nodeId === node.id)) {
+          state.nodesMemoryState.push({
+            nodeId: node.id,
+            memoryState: INITIAL_NODE_MEMORY_STATE,
+          });
+        }
+      });
+    },
+
+    setNodeMemoryState(
+      state,
+      {
+        nodeId,
+        newNodeMemoryState,
+      }: { nodeId: string; newNodeMemoryState: NodeMemoryState }
+    ) {
+      const existingNodeMemoryStateIndex = state.nodesMemoryState.findIndex(
+        (memoryState) => memoryState.nodeId === nodeId
+      );
+      if (existingNodeMemoryStateIndex === -1) {
+        state.nodesMemoryState.push({
+          nodeId,
+          memoryState: newNodeMemoryState,
+        });
+      } else {
+        state.nodesMemoryState[existingNodeMemoryStateIndex] = {
+          nodeId,
+          memoryState: newNodeMemoryState,
+        };
+      }
     },
     setNetworkLinks(state, networkLinks: NetworkLink[]) {
       state.networkLinks = networkLinks;
@@ -201,8 +239,13 @@ const store = createStore({
 });
 
 eventBus.subscribe((event) => {
-  console.log(event);
   store.dispatch("eventBusEvent", event);
 });
+
+nodeMemoryStateManager.onNodeMemoryStateChange(
+  ({ nodeId, newNodeMemoryState }) => {
+    store.commit("setNodeMemoryState", { nodeId, newNodeMemoryState });
+  }
+);
 
 export default store;
