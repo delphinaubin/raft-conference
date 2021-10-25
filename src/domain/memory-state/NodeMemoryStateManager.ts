@@ -3,7 +3,7 @@ import { LogEntry } from "@/domain/log/LogEntry";
 export interface NodeMemoryState {
   term: number;
   votedFor?: string;
-  votesReceived: string[];
+  votesReceived: Set<string>;
   leader?: string;
   sentLength: { [nodeId: string]: number };
   ackedLength: { [nodeId: string]: number };
@@ -18,7 +18,7 @@ interface MemoryStateChangeEvent {
 
 export const INITIAL_NODE_MEMORY_STATE: NodeMemoryState = {
   term: 0,
-  votesReceived: [],
+  votesReceived: new Set(),
   sentLength: {},
   ackedLength: {},
   log: [],

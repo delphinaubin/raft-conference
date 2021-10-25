@@ -1,7 +1,7 @@
-import { NodeAlgorithmState } from "@/domain/raft/states/NodeAlgorithmState";
+import { AbstractNodeAlgorithmState } from "@/domain/raft/states/AbstractNodeAlgorithmState";
 import { NetworkRequest } from "@/domain/network/NetworkRequest";
 
-export class OffState extends NodeAlgorithmState {
+export class OffState extends AbstractNodeAlgorithmState {
   name = "off" as const;
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onEnterInState(): void {}
