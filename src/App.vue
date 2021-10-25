@@ -12,8 +12,10 @@
 
   <NodeManagement
     :selected-node="selectedNode"
+    :network-links="networkLinks"
     @close-drawer="resetSelection"
     @switch-node-state="switchNodeState"
+    @switch-node-network-state="switchNodeNetworkState"
     @send-log-to-node="sendLogToNode"
   />
 
@@ -75,7 +77,10 @@ export default class App extends Vue {
     return new Map(store.state.nodes.map((node) => [node.id, node.name]));
   }
 
-  get allNodesMemoryState(): { nodeId: string; memoryState: NodeMemoryState }[] {
+  get allNodesMemoryState(): {
+    nodeId: string;
+    memoryState: NodeMemoryState;
+  }[] {
     return store.state.nodesMemoryState;
   }
 
@@ -102,6 +107,27 @@ export default class App extends Vue {
     store.dispatch("switchNodeState", {
       nodeId: this.selectedNode.id,
       newNodeState,
+    });
+  }
+
+  switchNodeNetworkState(newNodeNetworkState: "on" | "off"): void {
+    if (!this.selectedNode) {
+      throw new Error(
+        "There is no selected node so we cant switch its network state"
+      );
+    }
+    const nodeId = this.selectedNode?.id;
+    const links = this.networkLinks.filter(
+      (link) => link.fromNodeId == nodeId || link.toNodeId == nodeId
+    );
+    const newNetworkLinkStatus =
+      newNodeNetworkState === "on" ? "connected" : "disconnected";
+    links.forEach((link) => {
+      store.dispatch("switchNetworkLinkStatus", {
+        fromNodeId: link.fromNodeId,
+        toNodeId: link.toNodeId,
+        newNetworkLinkStatus,
+      });
     });
   }
 

@@ -25,6 +25,21 @@
             >Turn this node on</a-button
           >
         </a-form-item>
+        <a-form-item>
+          <a-button
+            v-if="isNodeConnectedToNetwork"
+            @click="disconnectNodeFromNetwork"
+            type="primary"
+            danger
+            >Disconnect this node from the network</a-button
+          >
+          <a-button
+            type="primary"
+            v-if="!isNodeConnectedToNetwork"
+            @click="connectNodeToNetwork"
+            >Connect this node to the network</a-button
+          >
+        </a-form-item>
         <a-form-item label="Send value to node">
           <a-input-search
             type="number"
@@ -42,14 +57,17 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { RaftNode } from "@/domain/RaftNode";
+import { NetworkLink } from "@/domain/NetworkLink";
 
 @Options({
   props: {
     selectedNode: [null, Object],
+    networkLinks: Array,
   },
 })
 export default class NodeManagement extends Vue {
   selectedNode!: RaftNode | null;
+  networkLinks!: NetworkLink[];
   logToSend: string | null = null;
 
   get drawerVisible(): boolean {
@@ -60,15 +78,34 @@ export default class NodeManagement extends Vue {
     return this.selectedNode?.state === "off";
   }
 
+  get isNodeConnectedToNetwork(): boolean {
+    if (!this.selectedNode) {
+      return false;
+    }
+    const nodeId = this.selectedNode?.id;
+    return this.networkLinks
+      .filter((link) => link.fromNodeId == nodeId || link.toNodeId == nodeId)
+      .some((link) => link.status == "connected");
+  }
+
   onDrawerClose(): void {
     this.$emit("close-drawer");
   }
+
   switchOffNode(): void {
     this.$emit("switch-node-state", "off");
   }
 
   switchOnNode(): void {
     this.$emit("switch-node-state", "on");
+  }
+
+  connectNodeToNetwork(): void {
+    this.$emit("switch-node-network-state", "on");
+  }
+
+  disconnectNodeFromNetwork(): void {
+    this.$emit("switch-node-network-state", "off");
   }
 
   sendLog(): void {
