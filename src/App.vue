@@ -1,5 +1,8 @@
 <template>
-  <Header />
+  <Header
+    @stop-algorithm="stopAlgorithm"
+    :isAlgorithmRunning="isAlgorithmRunning"
+  />
   <NodeVisualizer
     :nodes="nodes"
     :networkLinks="networkLinks"
@@ -84,6 +87,10 @@ export default class App extends Vue {
     return store.state.nodesMemoryState;
   }
 
+  get isAlgorithmRunning(): boolean {
+    return store.state.isAlgorithmRunning;
+  }
+
   resetSelection(): void {
     store.dispatch("selectedNodeChange", null);
     store.dispatch("selectedNetworkLinkChange", null);
@@ -92,10 +99,10 @@ export default class App extends Vue {
   selectedNodeChange(selectedNode: RaftNode | null): void {
     store.dispatch("selectedNodeChange", selectedNode);
   }
-
   selectedNetworkLinkChange(selectedNetworkLink: NetworkLink): void {
     store.dispatch("selectedNetworkLinkChange", selectedNetworkLink);
   }
+
   created(): void {
     store.dispatch("init");
   }
@@ -145,7 +152,6 @@ export default class App extends Vue {
       newNetworkLinkStatus,
     });
   }
-
   sendLogToNode(logToSend: number): void {
     if (!this.selectedNode) {
       throw new Error("There is no selected node so we cant switch its state");
@@ -154,6 +160,9 @@ export default class App extends Vue {
       nodeId: this.selectedNode.id,
       logToSend,
     });
+  }
+  stopAlgorithm(): void {
+    store.dispatch("stopAlgorithm");
   }
 }
 </script>
