@@ -52,7 +52,8 @@ const store = createStore({
         if (!state.nodesMemoryState.some(({ nodeId }) => nodeId === node.id)) {
           state.nodesMemoryState.push({
             nodeId: node.id,
-            memoryState: INITIAL_NODE_MEMORY_STATE(),
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            memoryState: INITIAL_NODE_MEMORY_STATE(() => {}),
           });
         }
       });
