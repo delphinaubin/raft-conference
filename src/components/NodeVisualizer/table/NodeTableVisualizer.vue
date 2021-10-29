@@ -116,7 +116,13 @@ export default class NodeTableVisualizer extends Vue {
       `color: ${nodeStyle.labelColor}; font-size: 1.5rem`
     );
     console.info("%cAll state", "font-size: 1rem");
-    console.table(cloneDeep(memoryStateToLog.memoryState));
+    const readableMemoryState = {
+      ...memoryStateToLog.memoryState,
+      nodesWhichVotedForMe: `[${memoryStateToLog.memoryState.nodesWhichVotedForMe
+        .getValues()
+        .join(", ")}]`,
+    };
+    console.table(cloneDeep(readableMemoryState));
     if (memoryStateToLog.memoryState.log.length > 0) {
       console.info("%cAll node logs", "font-size: 1rem");
       console.table(cloneDeep(memoryStateToLog.memoryState.log));

@@ -3,7 +3,7 @@ import { LogEntry } from "@/domain/framework/log/LogEntry";
 export interface NodeMemoryState {
   term: number;
   votedFor?: string;
-  nodesWhichVotedForMe: Set<string>;
+  nodesWhichVotedForMe: SetProxy<string>;
   leader?: string;
   sentLength: { [nodeId: string]: number };
   ackedLength: { [nodeId: string]: number };
@@ -16,9 +16,36 @@ interface MemoryStateChangeEvent {
   newNodeMemoryState: NodeMemoryState;
 }
 
-export const INITIAL_NODE_MEMORY_STATE: () => NodeMemoryState = () => ({
+class SetProxy<T> {
+  internalSet: Set<T>;
+  constructor(private readonly onChangeCallBack: () => void) {
+    this.internalSet = new Set();
+  }
+
+  add(value: T): void {
+    this.internalSet.add(value);
+    this.onChangeCallBack();
+  }
+
+  delete(value: T): void {
+    this.internalSet.delete(value);
+    this.onChangeCallBack();
+  }
+
+  get size(): number {
+    return this.internalSet.size;
+  }
+
+  getValues(): T[] {
+    return Array.from(this.internalSet.values());
+  }
+}
+
+export const INITIAL_NODE_MEMORY_STATE: (
+  onChange: () => void
+) => NodeMemoryState = (onChange) => ({
   term: 0,
-  nodesWhichVotedForMe: new Set(),
+  nodesWhichVotedForMe: new SetProxy(onChange),
   sentLength: {},
   ackedLength: {},
   log: [],
@@ -35,17 +62,27 @@ export class NodeMemoryStateManager {
   }
 
   getNodeInitialMemoryState(forNodeId: string): NodeMemoryState {
-    return new Proxy<NodeMemoryState>(INITIAL_NODE_MEMORY_STATE(), {
+    const nodeMemoryStateReference = INITIAL_NODE_MEMORY_STATE(() => {
+      this.notifySubscribersOfChange(forNodeId, nodeMemoryStateReference);
+    });
+    return new Proxy<NodeMemoryState>(nodeMemoryStateReference, {
       set: (nodeMemoryState, prop, value): boolean => {
         (nodeMemoryState as any)[prop] = value;
-        this.callBacks.forEach((cb) =>
-          cb({
-            nodeId: forNodeId,
-            newNodeMemoryState: nodeMemoryState,
-          })
-        );
+        this.notifySubscribersOfChange(forNodeId, nodeMemoryState);
         return true;
       },
     });
+  }
+
+  private notifySubscribersOfChange(
+    forNodeId: string,
+    nodeMemoryState: NodeMemoryState
+  ) {
+    this.callBacks.forEach((cb) =>
+      cb({
+        nodeId: forNodeId,
+        newNodeMemoryState: nodeMemoryState,
+      })
+    );
   }
 }
