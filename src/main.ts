@@ -6,6 +6,7 @@ import VNetworkGraph from "v-network-graph";
 import "v-network-graph/lib/style.css";
 import "ant-design-vue/dist/antd.css";
 import {
+  Alert,
   Button,
   Col,
   Drawer,
@@ -32,6 +33,7 @@ app.use(Row);
 app.use(Col);
 app.use(Table);
 app.use(Switch);
+app.use(Alert);
 app.mount("#app");
 
 // To call manually in the console to stop debugging

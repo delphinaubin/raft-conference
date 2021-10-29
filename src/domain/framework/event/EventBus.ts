@@ -19,8 +19,12 @@ export class EventBus {
   private readonly idGenerator = subscriberIdGenerator();
   private readonly subscribers: Map<number, Subscriber> = new Map();
   private eventEmissionNumber = 0;
+  private isRunning = true;
 
   emitEvent(event: RaftEvent): void {
+    if (!this.isRunning) {
+      return;
+    }
     if ((window as any).isDebugModeActivated) {
       // eslint-disable-next-line no-debugger
       debugger;
@@ -43,5 +47,9 @@ export class EventBus {
 
   unSubscribe(subscriberId: number): void {
     this.subscribers.delete(subscriberId);
+  }
+
+  stop(): void {
+    this.isRunning = false;
   }
 }

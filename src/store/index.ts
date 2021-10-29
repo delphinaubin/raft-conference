@@ -6,7 +6,6 @@ import {
   networkManager,
   nodeMemoryStateManager,
   nodes,
-
 } from "@/store/bindRaftToStore";
 import { RaftEvent } from "@/domain/framework/event/EventBus";
 import { getNetworkLinksBetweenNodes } from "@/store/getNetworkLinksBetweenNodes";
@@ -31,6 +30,7 @@ export interface State {
   selectedNode: RaftNode | null;
   selectedNetworkLink: NetworkLink | null;
   nodesMemoryState: { nodeId: string; memoryState: NodeMemoryState }[];
+  isAlgorithmRunning: boolean;
 }
 
 const initialState: State = {
@@ -40,6 +40,7 @@ const initialState: State = {
   selectedNode: null,
   selectedNetworkLink: null,
   nodesMemoryState: [],
+  isAlgorithmRunning: true,
 };
 
 const store = createStore({
@@ -128,6 +129,9 @@ const store = createStore({
       if (networkLinkToChange) {
         networkLinkToChange.status = newNetworkLinkStatus;
       }
+    },
+    stopAlgorithm(state) {
+      state.isAlgorithmRunning = false;
     },
   },
   getters: {
@@ -234,6 +238,10 @@ const store = createStore({
           )
           .build()
       );
+    },
+    stopAlgorithm({ commit }) {
+      commit("stopAlgorithm");
+      eventBus.stop();
     },
   },
   modules: {},
