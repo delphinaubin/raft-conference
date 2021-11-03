@@ -25,6 +25,15 @@
           ><template #icon><EyeOutlined /></template
         ></a-button>
       </template>
+
+      <template #timers="{ text: timers }">
+        <NodeTimer
+          v-for="(timer, index) in timers"
+          :key="index"
+          :time="timer.time"
+          :name="timer.name"
+        ></NodeTimer>
+      </template>
     </a-table>
   </div>
 </template>
@@ -36,25 +45,31 @@ import {
   NodeStyle,
   NODE_STATE_STYLE,
 } from "@/components/NodeVisualizer/nodeStateStyle";
+import NodeTimer from "./NodeTimer.vue";
 import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryStateManager";
 import { cloneDeep } from "lodash";
 import { EyeOutlined } from "@ant-design/icons-vue";
+import { State } from "@/store";
 @Options({
   props: {
     nodes: Array,
     nodesMemoryState: Array,
+    nodeTimers: Object,
   },
   components: {
     EyeOutlined,
+    NodeTimer,
   },
 })
 export default class NodeTableVisualizer extends Vue {
   nodes!: RaftNode[];
   nodesMemoryState!: { nodeId: string; memoryState: NodeMemoryState }[];
+  nodeTimers!: State["timers"];
 
   get tableDataSource(): {
     node: RaftNode;
     memoryState: NodeMemoryState | Record<string, unknown>;
+    timers: { time: number; name: string }[];
   }[] {
     return this.nodes.map((node) => {
       return {
@@ -63,6 +78,7 @@ export default class NodeTableVisualizer extends Vue {
         memoryState: this.nodesMemoryState.find(
           ({ nodeId }) => nodeId === node.id
         )?.memoryState || { log: [] },
+        timers: this.nodeTimers[node.id] || [],
       };
     });
   }
@@ -85,6 +101,12 @@ export default class NodeTableVisualizer extends Vue {
         key: "log",
         dataIndex: "memoryState.log",
         slots: { customRender: "log" },
+      },
+      {
+        title: "timers",
+        key: "timers",
+        dataIndex: "timers",
+        slots: { customRender: "timers" },
       },
       {
         title: "",

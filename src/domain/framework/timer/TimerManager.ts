@@ -19,6 +19,7 @@ export class TimerManager {
           .startedByNodeId(starterNodeId)
           .withTimerId(timerId)
           .withLabel(label)
+          .withDuration(duration)
           .withStatus("ended")
           .build()
       );
@@ -32,6 +33,7 @@ export class TimerManager {
         .startedByNodeId(starterNodeId)
         .withTimerId(timerId)
         .withLabel(label)
+        .withDuration(duration)
         .withStatus("started")
         .build()
     );

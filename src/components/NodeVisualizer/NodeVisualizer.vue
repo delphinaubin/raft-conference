@@ -4,6 +4,7 @@
       <NodeTableVisualizer
         :nodes="nodes"
         :nodes-memory-state="nodesMemoryState"
+        :node-timers="nodeTimers"
       ></NodeTableVisualizer>
     </a-col>
     <a-col :span="12">
@@ -25,6 +26,7 @@ import { RaftNode } from "@/domain/framework/RaftNode";
 import { NetworkLink } from "@/domain/framework/NetworkLink";
 import NodeTableVisualizer from "@/components/NodeVisualizer/table/NodeTableVisualizer.vue";
 import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryStateManager";
+import { State } from "@/store";
 
 @Options({
   components: { NodeTableVisualizer, NodeGraphVisualizer },
@@ -34,6 +36,7 @@ import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryState
     selectedNode: [Object, null],
     selectedNetworkLink: [Object, null],
     nodesMemoryState: Array,
+    nodeTimers: Object,
   },
 })
 export default class NodeVisualizer extends Vue {
@@ -42,6 +45,7 @@ export default class NodeVisualizer extends Vue {
   selectedNode!: RaftNode | null;
   selectedNetworkLink!: NetworkLink;
   nodesMemoryState!: { nodeId: string; memoryState: NodeMemoryState }[];
+  nodeTimers!: State["timers"];
 
   selectedNodeChange(selectedNode: RaftNode | null): void {
     this.$emit("selected-node-change", selectedNode);

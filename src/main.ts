@@ -13,10 +13,12 @@ import {
   Form,
   Input,
   Popover,
+  Progress,
   Row,
   Switch,
   Table,
   Timeline,
+  Tooltip,
 } from "ant-design-vue";
 
 const app = createApp(App);
@@ -34,6 +36,8 @@ app.use(Col);
 app.use(Table);
 app.use(Switch);
 app.use(Alert);
+app.use(Progress);
+app.use(Tooltip);
 app.mount("#app");
 
 // To call manually in the console to stop debugging

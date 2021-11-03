@@ -9,6 +9,7 @@
     :selected-node="selectedNode"
     :selected-network-link="selectedNetworkLink"
     :nodes-memory-state="allNodesMemoryState"
+    :node-timers="allNodesTimers"
     @selected-node-change="selectedNodeChange"
     @selected-network-link-change="selectedNetworkLinkChange"
   ></NodeVisualizer>
@@ -39,7 +40,7 @@ import { Options, Vue } from "vue-class-component";
 import NodeVisualizer from "@/components/NodeVisualizer/NodeVisualizer.vue";
 import { RaftNode } from "@/domain/framework/RaftNode";
 import { NetworkLink } from "@/domain/framework/NetworkLink";
-import store, { HistoryEntry } from "@/store";
+import store, { HistoryEntry, State } from "@/store";
 import EventHistory from "@/components/EventHistory/EventHistory.vue";
 import NodeManagement from "@/components/NodeManagement/NodeManagement.vue";
 import NetworkManagement from "@/components/NetworkManagement/NetworkManagement.vue";
@@ -85,6 +86,10 @@ export default class App extends Vue {
     memoryState: NodeMemoryState;
   }[] {
     return store.state.nodesMemoryState;
+  }
+
+  get allNodesTimers(): State["timers"] {
+    return store.state.timers;
   }
 
   get isAlgorithmRunning(): boolean {
