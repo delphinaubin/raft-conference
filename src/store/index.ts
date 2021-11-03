@@ -31,6 +31,7 @@ export interface State {
   selectedNetworkLink: NetworkLink | null;
   nodesMemoryState: { nodeId: string; memoryState: NodeMemoryState }[];
   isAlgorithmRunning: boolean;
+  timers: Record<string, { name: string; id: number; time: number }[]>;
 }
 
 const initialState: State = {
@@ -41,6 +42,7 @@ const initialState: State = {
   selectedNetworkLink: null,
   nodesMemoryState: [],
   isAlgorithmRunning: true,
+  timers: {},
 };
 
 const store = createStore({
@@ -134,6 +136,29 @@ const store = createStore({
     stopAlgorithm(state) {
       state.isAlgorithmRunning = false;
     },
+    addTimerToNode(
+      state,
+      {
+        name,
+        id,
+        time,
+        nodeId,
+      }: { name: string; id: number; time: number; nodeId: string }
+    ) {
+      if (!state.timers[nodeId]) {
+        state.timers[nodeId] = [];
+      }
+      state.timers[nodeId].push({
+        time,
+        id,
+        name,
+      });
+    },
+    removeTimerToNode(state, { nodeId, id }: { nodeId: string; id: number }) {
+      state.timers[nodeId] = state.timers[nodeId].filter(
+        (timer) => timer.id !== id
+      );
+    },
   },
   getters: {
     sortedHistory(state) {
@@ -165,6 +190,22 @@ const store = createStore({
             nodeId: event.nodeId,
             newState: event.toState,
           });
+          break;
+        }
+        case "timer": {
+          if (event.status === "started") {
+            commit("addTimerToNode", {
+              nodeId: event.starterNodeId,
+              time: event.duration,
+              name: event.label,
+              id: event.timerId,
+            });
+          } else {
+            commit("removeTimerToNode", {
+              nodeId: event.starterNodeId,
+              id: event.timerId,
+            });
+          }
         }
       }
       commit("addEventToHistory", { event, eventId });

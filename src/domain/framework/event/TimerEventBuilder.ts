@@ -7,6 +7,7 @@ export interface TimerEvent {
   starterNodeId: string;
   label: string;
   isAsyncEvent: true;
+  duration: number;
 }
 
 export class TimerEventBuilder {
@@ -14,6 +15,7 @@ export class TimerEventBuilder {
   private status?: TimerStatus;
   private starterNodeId?: string;
   private label?: string;
+  private duration = -1;
 
   static aTimerEvent(): TimerEventBuilder {
     return new TimerEventBuilder();
@@ -39,6 +41,11 @@ export class TimerEventBuilder {
     return this;
   }
 
+  withDuration(duration: number): this {
+    this.duration = duration;
+    return this;
+  }
+
   build(): TimerEvent {
     if (!this.timerId) {
       throw new Error("Cannot build a timer event without timerId");
@@ -60,6 +67,7 @@ export class TimerEventBuilder {
       type: "timer",
       timerId: this.timerId,
       status: this.status,
+      duration: this.duration,
       starterNodeId: this.starterNodeId,
       label: this.label,
       isAsyncEvent: true,
