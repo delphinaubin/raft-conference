@@ -35,7 +35,6 @@ export interface LogRequest extends AbstractNodeToNodeNetworkRequest {
 
 export interface LogResponse extends AbstractNodeToNodeNetworkRequest {
   type: "log-response";
-  follower: string;
   term: number;
   ack: number;
   success: boolean;
