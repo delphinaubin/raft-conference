@@ -42,6 +42,18 @@ export class TimerManager {
 
   cancelTimer(timerId: number): void {
     clearTimeout(timerId);
+    const timerToCancel = this.runningTimers.get(timerId);
+    if (!timerToCancel) {
+      return;
+    }
     this.runningTimers.delete(timerId);
+    this.eventBus.emitEvent(
+      TimerEventBuilder.aTimerEvent()
+        .startedByNodeId(timerToCancel.starterNodeId)
+        .withTimerId(timerId)
+        .withLabel("CANCELED")
+        .withStatus("canceled")
+        .build()
+    );
   }
 }
