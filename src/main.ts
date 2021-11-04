@@ -17,6 +17,7 @@ import {
   Row,
   Switch,
   Table,
+  Tag,
   Timeline,
   Tooltip,
 } from "ant-design-vue";
@@ -38,6 +39,7 @@ app.use(Switch);
 app.use(Alert);
 app.use(Progress);
 app.use(Tooltip);
+app.use(Tag);
 app.mount("#app");
 
 // To call manually in the console to stop debugging

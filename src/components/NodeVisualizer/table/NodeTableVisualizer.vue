@@ -12,8 +12,10 @@
       </template>
 
       <template #log="{ text: log }">
-        <span v-if="log && log.length > 0">
-          {{ log[log.length - 1].value }}
+        <span v-if="log && log.lastLog">
+          <a-tag :color="log.isLastLogCommited ? 'green' : 'pink'">{{
+            log.lastLog
+          }}</a-tag>
         </span>
       </template>
 
@@ -68,17 +70,27 @@ export default class NodeTableVisualizer extends Vue {
 
   get tableDataSource(): {
     node: RaftNode;
-    memoryState: NodeMemoryState | Record<string, unknown>;
     timers: { time: number; name: string }[];
+    log: { lastLog: number; isLastLogCommited: boolean } | undefined;
   }[] {
     return this.nodes.map((node) => {
+      const memoryState = this.nodesMemoryState.find(
+        ({ nodeId }) => nodeId === node.id
+      )?.memoryState;
+
+      let log = undefined;
+      if (memoryState) {
+        log = {
+          lastLog: memoryState.log[memoryState.log.length - 1]?.value,
+          isLastLogCommited:
+            memoryState.commitLength === memoryState.log.length,
+        };
+      }
       return {
         key: node.id,
         node,
-        memoryState: this.nodesMemoryState.find(
-          ({ nodeId }) => nodeId === node.id
-        )?.memoryState || { log: [] },
         timers: this.nodeTimers[node.id] || [],
+        log,
       };
     });
   }
@@ -99,7 +111,7 @@ export default class NodeTableVisualizer extends Vue {
       {
         title: "Last log",
         key: "log",
-        dataIndex: "memoryState.log",
+        dataIndex: "log",
         slots: { customRender: "log" },
       },
       {
@@ -158,4 +170,5 @@ export default class NodeTableVisualizer extends Vue {
 .node-table-visualizer-container {
   padding: 1rem;
 }
+
 </style>
