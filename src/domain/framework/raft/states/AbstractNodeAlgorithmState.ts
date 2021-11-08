@@ -39,6 +39,7 @@ export abstract class AbstractNodeAlgorithmState {
 
   protected readonly runningTimers: Map<number, () => void> = new Map();
   private eventBusSubscriberId?: number;
+  protected isTrulyRandom = false;
 
   abstract name: RaftNodeState;
 
@@ -150,7 +151,9 @@ export abstract class AbstractNodeAlgorithmState {
     label: string,
     minimumTime = 3_000
   ): Promise<void> {
-    const randomDuration = minimumTime + parseInt(this.nodeId) * 4_000;
+    const randomDuration = this.isTrulyRandom
+      ? Math.round(Math.random() * 5_000)
+      : minimumTime + parseInt(this.nodeId) * 4_000;
     return this.startTimer(randomDuration, label);
   }
 
