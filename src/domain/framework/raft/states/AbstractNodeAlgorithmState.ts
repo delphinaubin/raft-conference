@@ -20,7 +20,7 @@ import { VoteRequestBuilder } from "@/domain/framework/network/VoteRequestBuilde
 import { RelayBroadcastRequestBuilder } from "@/domain/framework/network/RelayBroadcastRequestBuilder";
 import { NodeMemoryState } from "@/domain/framework/memory-state/NodeMemoryStateManager";
 
-type ConcreteNodeToNodeNetworkRequestBuilder =
+export type ConcreteNodeToNodeNetworkRequestBuilder =
   | LogResponseBuilder
   | VoteResponseBuilder
   | LogRequestBuilder

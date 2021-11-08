@@ -3,7 +3,6 @@ import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/Node
 import { LogEntry } from "@/domain/framework/log/LogEntry";
 
 export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
-  private term?: number;
   private leaderId?: string;
   private logLength?: number;
   private logTerm?: number;
@@ -16,11 +15,6 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
 
   withLeaderId(leaderId: string): this {
     this.leaderId = leaderId;
-    return this;
-  }
-
-  withTerm(term: number): this {
-    this.term = term;
     return this;
   }
 
@@ -48,9 +42,6 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
     if (!this.leaderId) {
       this.leaderId = "-1";
     }
-    if (this.term === undefined) {
-      this.term = -1;
-    }
     if (this.logLength === undefined) {
       this.logLength = 0;
     }
@@ -65,7 +56,6 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
       ...super.build(),
       type: "log-request",
       leaderId: this.leaderId,
-      term: this.term,
       logLength: this.logLength,
       logTerm: this.logTerm,
       leaderCommit: this.leaderCommit,

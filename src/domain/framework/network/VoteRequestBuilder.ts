@@ -2,16 +2,11 @@ import { VoteRequest } from "@/domain/framework/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/NodeToNodeNetworkRequestBuilder";
 
 export class VoteRequestBuilder extends NodeToNodeNetworkRequestBuilder {
-  private term?: number = 0;
   private logLength?: number = 0;
   private logTerm?: number = 0;
 
   static aVoteRequest(): VoteRequestBuilder {
     return new VoteRequestBuilder();
-  }
-  withTerm(term: number): this {
-    this.term = term;
-    return this;
   }
   withLogLength(logLength: number): this {
     this.logLength = logLength;
@@ -23,9 +18,6 @@ export class VoteRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   }
 
   build(): VoteRequest {
-    if (this.term === undefined) {
-      throw new Error("Cannot build a vote request without term");
-    }
     if (this.logLength == undefined) {
       throw new Error("Cannot build a vote request without logLength");
     }
@@ -35,7 +27,6 @@ export class VoteRequestBuilder extends NodeToNodeNetworkRequestBuilder {
     return {
       ...super.build(),
       type: "vote-request",
-      term: this.term,
       logLength: this.logLength,
       logTerm: this.logTerm,
     };

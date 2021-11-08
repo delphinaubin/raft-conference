@@ -7,6 +7,7 @@ export interface AbstractNetworkRequest {
 export interface AbstractNodeToNodeNetworkRequest
   extends AbstractNetworkRequest {
   senderNodeId: string;
+  term: number;
 }
 
 export interface VoteRequest extends AbstractNodeToNodeNetworkRequest {
@@ -26,7 +27,6 @@ export interface VoteResponse extends AbstractNodeToNodeNetworkRequest {
 export interface LogRequest extends AbstractNodeToNodeNetworkRequest {
   type: "log-request";
   leaderId: string;
-  term: number;
   logLength: number;
   logTerm: number;
   leaderCommit: number;
@@ -49,6 +49,7 @@ export interface BroadcastRequest extends AbstractNetworkRequest {
 export interface RelayBroadcastRequest
   extends AbstractNodeToNodeNetworkRequest {
   type: "broadcast-request";
+  term: number;
   log: number;
 }
 

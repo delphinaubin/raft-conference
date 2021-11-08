@@ -3,9 +3,15 @@ import { NetworkRequestBuilder } from "@/domain/framework/network/NetworkRequest
 
 export abstract class NodeToNodeNetworkRequestBuilder extends NetworkRequestBuilder {
   protected senderNodeId?: string;
+  protected term = 0;
 
   withSenderNodeId(senderNodeId: string): this {
     this.senderNodeId = senderNodeId;
+    return this;
+  }
+
+  withTerm(term: number): this {
+    this.term = term;
     return this;
   }
 
@@ -18,6 +24,7 @@ export abstract class NodeToNodeNetworkRequestBuilder extends NetworkRequestBuil
 
     return {
       ...super.build(),
+      term: this.term,
       senderNodeId: this.senderNodeId,
     };
   }
