@@ -32,6 +32,11 @@ class SetProxy<T> {
     this.onChangeCallBack();
   }
 
+  clear(): void {
+    this.internalSet.clear();
+    this.onChangeCallBack();
+  }
+
   get size(): number {
     return this.internalSet.size;
   }
