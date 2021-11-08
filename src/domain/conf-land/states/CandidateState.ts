@@ -32,14 +32,17 @@ export class CandidateState extends NodeAlgorithmState {
     this.sendNetworkRequestToAllOtherNodes(
       VoteRequestBuilder.aVoteRequest().withTerm(this.nodeMemoryState.term)
     );
-    this.startTimerWithRandomDuration("Election timeout", 2_000).then(() => {
+    this.startTimerWithRandomDuration("Election timeout", 10).then(() => {
       this.startNewElectoralProcess();
     });
   }
 
   protected onLogRequest(request: LogRequest): void {
     super.onLogRequest(request);
-    this.changeState("follower");
+    if (request.term > this.nodeMemoryState.term) {
+      this.nodeMemoryState.term = request.term;
+      this.changeState("follower");
+    }
   }
 
   protected onVoteResponse(response: VoteResponse): void {

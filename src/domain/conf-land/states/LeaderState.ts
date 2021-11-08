@@ -3,8 +3,10 @@ import {
   BroadcastRequest,
   LogRequest,
   LogResponse,
+  VoteRequest,
 } from "@/domain/framework/network/NetworkRequest";
 import { LogRequestBuilder } from "@/domain/framework/network/LogRequestBuilder";
+import { VoteResponseBuilder } from "@/domain/framework/network/VoteResponseBuilder";
 
 export class LeaderState extends NodeAlgorithmState {
   name = "leader" as const;
@@ -25,6 +27,20 @@ export class LeaderState extends NodeAlgorithmState {
     super.onLogRequest(request);
     if (request.term > this.nodeMemoryState.term) {
       this.nodeMemoryState.term = request.term;
+      this.changeState("follower");
+    }
+  }
+
+  protected onVoteRequest(request: VoteRequest): void {
+    super.onVoteRequest(request);
+    if (request.term > this.nodeMemoryState.term) {
+      this.nodeMemoryState.term = request.term;
+      this.sendNetworkRequest(
+        VoteResponseBuilder.aVoteResponse()
+          .withReceiverNodeId(request.senderNodeId)
+          .withGranted(true)
+      );
+      this.nodeMemoryState.votedFor = request.senderNodeId;
       this.changeState("follower");
     }
   }
