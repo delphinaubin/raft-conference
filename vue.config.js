@@ -7,7 +7,7 @@ module.exports = {
         modifyVars: {
           "primary-color": "DarkGoldenRod",
           "font-family":
-            "Taviraj, 'Josefin Slab', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB','Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji','Segoe UI Emoji', 'Segoe UI Symbol';",
+            "Bitter, 'Roboto Slab', Cormorant, Taviraj, 'Josefin Slab', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB','Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji','Segoe UI Emoji', 'Segoe UI Symbol';",
         },
         javascriptEnabled: true,
       },
