@@ -12,14 +12,12 @@ export interface AbstractNodeToNodeNetworkRequest
 
 export interface VoteRequest extends AbstractNodeToNodeNetworkRequest {
   type: "vote-request";
-  term: number;
   logLength: number;
   logTerm: number;
 }
 
 export interface VoteResponse extends AbstractNodeToNodeNetworkRequest {
   type: "vote-response";
-  term: number;
   voterId: string;
   granted: boolean;
 }
@@ -30,14 +28,12 @@ export interface LogRequest extends AbstractNodeToNodeNetworkRequest {
   logLength: number;
   logTerm: number;
   leaderCommit: number;
-  entries: LogEntry[];
+  logEntries: LogEntry[];
 }
 
 export interface LogResponse extends AbstractNodeToNodeNetworkRequest {
   type: "log-response";
-  follower: string;
-  term: number;
-  ack: number;
+  ackLength: number;
   success: boolean;
 }
 
@@ -49,7 +45,6 @@ export interface BroadcastRequest extends AbstractNetworkRequest {
 export interface RelayBroadcastRequest
   extends AbstractNodeToNodeNetworkRequest {
   type: "broadcast-request";
-  term: number;
   log: number;
 }
 

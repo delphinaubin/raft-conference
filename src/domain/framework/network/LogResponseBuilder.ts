@@ -2,15 +2,15 @@ import { LogResponse } from "@/domain/framework/network/NetworkRequest";
 import { NodeToNodeNetworkRequestBuilder } from "@/domain/framework/network/NodeToNodeNetworkRequestBuilder";
 
 export class LogResponseBuilder extends NodeToNodeNetworkRequestBuilder {
-  private ack = 0;
+  private ackLength = 0;
   private success?: boolean;
 
   static aLogResponse(): LogResponseBuilder {
     return new LogResponseBuilder();
   }
 
-  withAck(ack: number): this {
-    this.ack = ack;
+  withAckLength(ackLength: number): this {
+    this.ackLength = ackLength;
     return this;
   }
 
@@ -27,7 +27,7 @@ export class LogResponseBuilder extends NodeToNodeNetworkRequestBuilder {
     return {
       ...super.build(),
       type: "log-response",
-      ack: this.ack,
+      ackLength: this.ackLength,
       success: this.success,
     };
   }

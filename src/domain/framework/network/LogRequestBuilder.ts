@@ -7,7 +7,7 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   private logLength?: number;
   private logTerm?: number;
   private leaderCommit?: number;
-  private entries: LogEntry[] = [];
+  private logEntries: LogEntry[] = [];
 
   static aLogRequest(): LogRequestBuilder {
     return new LogRequestBuilder();
@@ -34,7 +34,7 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
   }
 
   withLogEntries(logEntries: LogEntry[]): this {
-    this.entries = logEntries;
+    this.logEntries = logEntries;
     return this;
   }
 
@@ -59,7 +59,7 @@ export class LogRequestBuilder extends NodeToNodeNetworkRequestBuilder {
       logLength: this.logLength,
       logTerm: this.logTerm,
       leaderCommit: this.leaderCommit,
-      entries: this.entries,
+      logEntries: this.logEntries,
     };
   }
 }
