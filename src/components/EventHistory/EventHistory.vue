@@ -132,5 +132,6 @@ export default class EventHistory extends Vue {
 }
 .history-item {
   font-size: 1rem;
+  font-family: Arial;
 }
 </style>
