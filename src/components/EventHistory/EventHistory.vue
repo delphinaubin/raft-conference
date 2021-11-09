@@ -115,7 +115,7 @@ export default class EventHistory extends Vue {
             label: `${this.nodeNamesById.get(event.starterNodeId)} ${
               statusToVerb[event.status]
             } (${event.label})`,
-            color: "black",
+            color: "white",
           };
         }
       }

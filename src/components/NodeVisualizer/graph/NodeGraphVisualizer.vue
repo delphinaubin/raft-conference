@@ -171,15 +171,15 @@ export default class NodeGraphVisualizer extends Vue {
         },
         normal: {
           color: (edge: Edge): string =>
-            edge.status === "connected" ? "lightgreen" : "orangered",
+            edge.status === "connected" ? "seagreen" : "orangered",
           dasharray: (edge: Edge): number =>
             edge.status === "connected" ? 0 : 2,
         },
         hover: {
-          color: "black",
+          color: "white",
         },
         selected: {
-          color: "black",
+          color: "white",
         },
       },
     };
