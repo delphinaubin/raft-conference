@@ -8,6 +8,7 @@ module.exports = {
           "primary-color": "DarkGoldenRod",
           "font-family":
             "Bitter, 'Roboto Slab', Cormorant, Taviraj, 'Josefin Slab', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB','Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji','Segoe UI Emoji', 'Segoe UI Symbol';",
+          "body-background": "#121424",
         },
         javascriptEnabled: true,
       },
