@@ -152,7 +152,7 @@ export abstract class AbstractNodeAlgorithmState {
     minimumTime = 3_000
   ): Promise<void> {
     const randomDuration = this.isTrulyRandom
-      ? Math.round(Math.random() * 5_000)
+      ? Math.round(Math.random() * 5_000) + minimumTime
       : minimumTime + parseInt(this.nodeId) * 4_000;
     return this.startTimer(randomDuration, label);
   }
