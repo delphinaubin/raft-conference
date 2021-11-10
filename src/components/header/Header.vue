@@ -1,6 +1,6 @@
 <template>
   <div class="header-container">
-    <h1>Raft algorithm demo</h1>
+    <h1 class="the-title">Game of nodes</h1>
     <div class="header-actions">
       <a-button @click="toggleDebugMode" type="primary">
         <BugOutlined /> Debug</a-button
@@ -52,5 +52,8 @@ export default class Header extends Vue {
 }
 .header-actions button {
   margin: 0 0.5rem;
+}
+.the-title {
+  font-family: 'Game of Thrones';
 }
 </style>

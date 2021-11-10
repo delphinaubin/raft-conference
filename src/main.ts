@@ -4,7 +4,7 @@ import store from "./store";
 
 import VNetworkGraph from "v-network-graph";
 import "v-network-graph/lib/style.css";
-import "ant-design-vue/dist/antd.css";
+import "ant-design-vue/dist/antd.dark.less";
 import {
   Alert,
   Button,

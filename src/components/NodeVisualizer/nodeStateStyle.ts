@@ -10,26 +10,26 @@ export interface NodeStyle {
 export const NODE_STATE_STYLE: Record<RaftNodeState, NodeStyle> = {
   leader: {
     icon: "👑",
-    color: "white",
-    borderColor: "royalBlue",
-    labelColor: "royalBlue",
+    color: "transparent",
+    borderColor: "#FFC30F",
+    labelColor: "#FFC30F",
   },
   candidate: {
     icon: "☝️",
-    color: "white",
-    borderColor: "navy",
-    labelColor: "navy",
+    color: "transparent",
+    borderColor: "chocolate",
+    labelColor: "chocolate",
   },
   follower: {
     icon: "😶",
-    color: "white",
-    borderColor: "slateGrey",
-    labelColor: "slateGrey",
+    color: "transparent",
+    borderColor: "BurlyWood",
+    labelColor: "BurlyWood",
   },
   off: {
     icon: "❌",
-    color: "white",
-    borderColor: "orangeRed",
+    color: "transparent",
+    borderColor: "red",
     labelColor: "red",
   },
 } as const;
