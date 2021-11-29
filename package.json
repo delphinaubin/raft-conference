@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "presentation": "open https://docs.google.com/presentation/d/1xT2kP_KxTf8fMMTI1GJDVM0s4lwHV_2SSrRaTLlzf1w/edit?slide=id.g100e05fb286_0_6#slide=id.g1004614e2bc_1_0 && sleep 5 && afplay ./official-opening-credits-game-of-thrones-hbo.mp3",
+    "presentation": "open https://docs.google.com/presentation/d/1xT2kP_KxTf8fMMTI1GJDVM0s4lwHV_2SSrRaTLlzf1w/edit?slide=id.g100e05fb286_0_6#slide=id.g1004614e2bc_1_0 && sleep 7 && afplay ./official-opening-credits-game-of-thrones-hbo.mp3",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
