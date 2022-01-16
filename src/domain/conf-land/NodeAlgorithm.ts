@@ -3,6 +3,6 @@ import { AbstractNodeAlgorithm } from "@/domain/framework/raft/AbstractNodeAlgor
 
 export class NodeAlgorithm extends AbstractNodeAlgorithm {
   getInitialState(): RaftNodeState {
-    return "off";
+    return "follower";
   }
 }
