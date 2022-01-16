@@ -91,7 +91,7 @@ Quand la node 2 se reconnecte au network, elle repasse follower<br/>
 On envoie log 1 au leader<br/>
 Node 2 est élu leader<br/>
 On envoie log 2 à node 2<br/>
-Je reconnecte node 1, on a 2 leaders
+Je reconnecte node 1, on a 2 leaders et node 3 hésite entre leader au follower
 
 ℹ Interméde<br/>
 On ne sait pas ici forcément quel leader a raison<br/>
@@ -103,7 +103,7 @@ Alors on va plutôt utiliser un entier appeler le term pour compter les électio
 ### 11 - When a node becomes candidate it increments its term
 ⚙ Quand une node devient candidat son term augmente de 1<br/>
 Les leaders envoient le term dans leurs logRequest<br/>
-si je reçois une logRequest d'un term inférieur je ne l'accepte pas<br/>
+En tant que follower, si je reçois une logRequest d'un term inférieur je ne l'accepte pas<br/>
 par contre si le term est supérieur je l'accepte et je maj mon term<br/>
 ✅ J'ai 1 leader et 2 followers, je coupe le network au leader<br/>
 J'envoie un message au leader 1<br/>
@@ -128,7 +128,7 @@ Node 3 passe candidat<br/>
 Rien ne se passe, on est bloqué, on a deux candidats
 
 ### 13 - Candidate restarts its election process if previous one timed out
-⚙ Quand une node devient candidat, elle démarre une élection et set un timer random (2000)<br/>
+⚙ Quand une node devient candidat, elle démarre une élection et set un timer random (500)<br/>
 Si le timer tombe en timeout: elle redémarre une élection avec term + 1<br/>
 (note: si le candidat redevient follower, son timer est cancel)<br/>
 ❌ J'ai 1 leader et 2 followers, je déco node 2 du network<br/>
@@ -173,6 +173,7 @@ Le leader met à jour son ack pour ce follower s'il est success
 ```typescript
 ackedLength[follower] = response.ack
 ```
+Le nombre de acklength doit être égal à this.nodememorystate.log.length
 if(nombre de acks > nombre de nodes / 2)<br/>
 je met le commit à this.nodeMemoryState.log.length<br/>
 Le commit length est envoyé par le leader<br/>
