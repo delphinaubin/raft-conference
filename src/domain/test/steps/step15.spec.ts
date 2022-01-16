@@ -142,6 +142,45 @@ describe("Step 15", () => {
           lastAckLength
         );
       });
+      test("Leader doesn't use its ackedLength value but its log.length to updates its commit length (fix issue we had)", () => {
+        const leaderNodeId = "3";
+        const followerNodeId = "2";
+        const { leaderState, dependencies } = getLeaderStateMock(leaderNodeId, [
+          leaderNodeId,
+          followerNodeId,
+          "3",
+        ]);
+
+        const lastAckLength = 2;
+        dependencies.nodeMemoryState.log = [
+          {
+            value: 12,
+            term: 1,
+          },
+          {
+            value: 24,
+            term: 1,
+          },
+        ];
+        dependencies.nodeMemoryState.ackedLength[leaderNodeId] = 0;
+
+        leaderState.onReceiveNetworkRequest(
+          LogResponseBuilder.aLogResponse()
+            .withSenderNodeId(followerNodeId)
+            .withReceiverNodeId(leaderNodeId)
+            .withAckLength(lastAckLength)
+            .withSuccess(true)
+            .build()
+        );
+
+        expect(
+          dependencies.nodeMemoryState.ackedLength[followerNodeId]
+        ).toEqual(lastAckLength);
+
+        expect(dependencies.nodeMemoryState.commitLength).toEqual(
+          lastAckLength
+        );
+      });
       test("Leader updates ackLength, but doesn't update the commitLength when the majority of consumer has not updated ackLength", () => {
         const leaderNodeId = "3";
         const followerNodeId = "2";
@@ -216,7 +255,7 @@ describe("Step 15", () => {
     });
   });
 
-  test("Leader sends its commit length il LogRequest ", () => {
+  test("Leader sends its commit length in LogRequest ", () => {
     const leaderNodeId = "1";
     const { leaderState, dependencies } = getLeaderStateMock(leaderNodeId, [
       leaderNodeId,
