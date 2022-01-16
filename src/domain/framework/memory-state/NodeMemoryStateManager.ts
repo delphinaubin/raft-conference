@@ -36,6 +36,10 @@ class SetProxy<T> {
     this.onChangeCallBack();
   }
 
+  has(value: T): boolean {
+    return this.internalSet.has(value);
+  }
+
   get size(): number {
     return this.internalSet.size;
   }
@@ -71,6 +75,7 @@ export class NodeMemoryStateManager {
     });
     return new Proxy<NodeMemoryState>(nodeMemoryStateReference, {
       set: (nodeMemoryState, prop, value): boolean => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (nodeMemoryState as any)[prop] = value;
         this.notifySubscribersOfChange(forNodeId, nodeMemoryState);
         return true;

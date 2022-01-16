@@ -103,7 +103,7 @@ export default class NetworkManagement extends Vue {
 }
 .arrow {
   font-size: 4rem;
-  color: #FFF !important;
+  color: #fff !important;
 }
 
 .actions-container {

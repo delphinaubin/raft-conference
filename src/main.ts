@@ -43,6 +43,8 @@ app.use(Tag);
 app.mount("#app");
 
 // To call manually in the console to stop debugging
-(window as any).stopDebug = () => {
-  (window as any).isDebugModeActivated = false;
+(window as unknown as { stopDebug: () => void }).stopDebug = () => {
+  (
+    window as unknown as { isDebugModeActivated: boolean }
+  ).isDebugModeActivated = false;
 };

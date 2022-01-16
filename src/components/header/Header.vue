@@ -34,7 +34,9 @@ import { BugOutlined, PauseOutlined } from "@ant-design/icons-vue";
 export default class Header extends Vue {
   isAlgorithmRunning!: boolean;
   toggleDebugMode(): void {
-    (window as any).isDebugModeActivated = true;
+    (
+      window as unknown as { isDebugModeActivated: boolean }
+    ).isDebugModeActivated = true;
   }
   stopAlgorithm(): void {
     this.$emit("stop-algorithm");
@@ -54,6 +56,6 @@ export default class Header extends Vue {
   margin: 0 0.5rem;
 }
 .the-title {
-  font-family: 'Game of Thrones';
+  font-family: "Game of Thrones";
 }
 </style>

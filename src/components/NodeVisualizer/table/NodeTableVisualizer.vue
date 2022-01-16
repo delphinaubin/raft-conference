@@ -173,6 +173,4 @@ export default class NodeTableVisualizer extends Vue {
 .node-table-visualizer-container tbody {
   font-family: Arial;
 }
-
-
 </style>

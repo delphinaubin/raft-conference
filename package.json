@@ -7,7 +7,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "prettier:fix": "prettier --write 'src/**/*.{ts,json}' '*.json'"
   },
   "dependencies": {
     "@ant-design/icons-vue": "6.0.1",
@@ -78,6 +79,9 @@
   "jest": {
     "preset": "@vue/cli-plugin-unit-jest/presets/typescript-and-babel",
     "rootDir": "src",
+    "moduleNameMapper": {
+      "@/(.*)$": "<rootDir>/$1"
+    },
     "testMatch": [
       "**/?(*.)spec.ts"
     ],
