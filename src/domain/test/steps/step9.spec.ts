@@ -66,12 +66,14 @@ describe("Step 9", () => {
       VoteRequestBuilder.aVoteRequest()
         .withReceiverNodeId("1")
         .withSenderNodeId(candidateNodeId)
+        .withTerm(expect.any(Number))
         .build()
     );
     expect(dependencies.networkManager.sendRequest).toHaveBeenCalledWith(
       VoteRequestBuilder.aVoteRequest()
         .withReceiverNodeId("2")
         .withSenderNodeId(candidateNodeId)
+        .withTerm(expect.any(Number))
         .build()
     );
   });
