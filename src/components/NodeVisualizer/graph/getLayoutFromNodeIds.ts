@@ -1,4 +1,4 @@
-import { Layouts, Position } from "v-network-graph";
+import { Position } from "v-network-graph";
 
 interface NodePosition {
   x: number;

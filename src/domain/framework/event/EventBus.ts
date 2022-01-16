@@ -25,7 +25,10 @@ export class EventBus {
     if (!this.isRunning) {
       return;
     }
-    if ((window as any).isDebugModeActivated) {
+    if (
+      (window as unknown as { isDebugModeActivated: boolean })
+        .isDebugModeActivated
+    ) {
       // eslint-disable-next-line no-debugger
       debugger;
     }

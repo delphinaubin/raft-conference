@@ -1,5 +1,4 @@
 import { AbstractNodeAlgorithmState } from "@/domain/framework/raft/states/AbstractNodeAlgorithmState";
-import { NetworkRequest } from "@/domain/framework/network/NetworkRequest";
 
 export class OffState extends AbstractNodeAlgorithmState {
   name = "off" as const;
@@ -12,7 +11,7 @@ export class OffState extends AbstractNodeAlgorithmState {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   onReceiveNetworkRequest(): void {}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   onVoteRequest(): void {}
 
   onBroadcastRequest(): Promise<void> {
