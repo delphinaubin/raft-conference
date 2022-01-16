@@ -32,6 +32,26 @@ describe("Step 17", () => {
         .build()
     );
   });
+  test("Candidate which becomes follower on LogRequest updates its term", () => {
+    const candidateNodeId = "3";
+    const { candidateState, dependencies } = getCandidateStateMock(
+      candidateNodeId,
+      ["1", "2", candidateNodeId]
+    );
+    const candidateTerm = 3;
+    const leaderTerm = candidateTerm + 2;
+    dependencies.nodeMemoryState.term = candidateTerm;
+    candidateState.onReceiveNetworkRequest(
+      LogRequestBuilder.aLogRequest()
+        .withSenderNodeId("1")
+        .withReceiverNodeId(candidateNodeId)
+        .withLogEntries([])
+        .withTerm(leaderTerm)
+        .build()
+    );
+
+    expect(dependencies.nodeMemoryState.term).toEqual(leaderTerm);
+  });
 
   test("Leader which receives a LogRequest with a greater term than him votes ok and becomes follower", (done) => {
     jest.setTimeout(500);

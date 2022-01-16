@@ -10,6 +10,7 @@ describe("Step 14", () => {
       ["1", "2", candidateNodeId]
     );
     const candidateTerm = 4;
+    const newCandidateTerm = candidateTerm + 1;
     dependencies.nodeMemoryState.term = candidateTerm;
     candidateState.onEnterInState();
 
@@ -18,6 +19,7 @@ describe("Step 14", () => {
         .withTerm(candidateTerm)
         .withReceiverNodeId("1")
         .withSenderNodeId(candidateNodeId)
+        .withTerm(newCandidateTerm)
         .build()
     );
 
@@ -26,6 +28,7 @@ describe("Step 14", () => {
         .withTerm(candidateTerm)
         .withReceiverNodeId("2")
         .withSenderNodeId(candidateNodeId)
+        .withTerm(newCandidateTerm)
         .build()
     );
   });
