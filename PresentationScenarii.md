@@ -176,6 +176,9 @@ ackedLength[follower] = response.ack
 Le nombre de acklength doit être égal à this.nodememorystate.log.length
 if(nombre de acks > nombre de nodes / 2)<br/>
 je met le commit à this.nodeMemoryState.log.length<br/>
+
+Faire une pause ici et montrer que le leader commit son log (vert)
+
 Le commit length est envoyé par le leader<br/>
 En tant que follower, je met à jour mon commit length<br/>
 ✅  J'ai 1 leader et 2 followers, je déco le leader du network<br/>
