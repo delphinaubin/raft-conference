@@ -72,7 +72,6 @@ describe("Step 16", () => {
       LogResponseBuilder.aLogResponse()
         .withSenderNodeId(followerNodeId)
         .withReceiverNodeId("1")
-        .withAckLength(3)
         .withSuccess(false)
         .build()
     );
