@@ -1,10 +1,15 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jest = require("jest");
 
-// TODO DAU : Take the step number in argument and run only applicable specs
-jest.run([
-  "--config",
-  "./src/safe-net-jest.config.js",
-  "--testPathPattern=src/domain/test/step1.spec.ts",
-  "--testPathPattern=src/domain/test/step2.spec.ts",
-]);
+const [, , stepNumber] = process.argv;
+process.env.stepNumber = stepNumber;
+
+const stepUnitTestFolder = `src/domain/test/steps`;
+const stepsToRun = new Array(+stepNumber)
+  .fill()
+  .map((_, index) => index + 1)
+  .map(
+    (stepNumber) =>
+      `--testPathPattern=${stepUnitTestFolder}/step${stepNumber}.spec.ts`
+  );
+jest.run(["--config", "./src/safe-net-jest.config.js", ...stepsToRun]);

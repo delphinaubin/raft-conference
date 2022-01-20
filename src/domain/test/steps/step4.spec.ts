@@ -2,6 +2,9 @@ import { NodeAlgorithm } from "@/domain/conf-land/NodeAlgorithm";
 
 describe("Step 4", () => {
   it("has 1 leader and 2 followers (should fail after Step 18)", () => {
+    if (+process.env.stepNumber >= 18) {
+      return;
+    }
     const dummy = <never>{};
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const dummyEventBus = <never>{ subscribe: () => {} };

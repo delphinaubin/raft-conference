@@ -6,6 +6,10 @@ import Mock = jest.Mock;
 
 describe("Step 7", () => {
   it("promotes follower to leader if it didnt receive log request from leader (should fail after step 9)", (done) => {
+    if (+process.env.stepNumber >= 9) {
+      done()
+      return;
+    }
     jest.setTimeout(500);
     const followerNodeId = "2";
     const timerId = 12;

@@ -4,5 +4,9 @@ module.exports = {
   moduleNameMapper: {
     "@/(.*)$": "<rootDir>/$1",
   },
-  // testMatch: ["<rootDir>/domain/test/step1.spec.ts"],
+  globals: {
+    "ts-jest": {
+      diagnostics: false,
+    },
+  },
 };

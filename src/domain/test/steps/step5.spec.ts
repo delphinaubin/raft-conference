@@ -6,6 +6,9 @@ import { getFollowerStateMock } from "@/domain/test/getFollowerStateMock";
 describe("Step 5", () => {
   const leaderNodeId = "1";
   test("leader's broadcast request sends log request (should fail after step 6)", () => {
+    if (+process.env.stepNumber >= 6) {
+      return;
+    }
     const { leaderState, dependencies } = getLeaderStateMock(leaderNodeId, [
       leaderNodeId,
       "2",
