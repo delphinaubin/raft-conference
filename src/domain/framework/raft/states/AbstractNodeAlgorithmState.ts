@@ -145,6 +145,25 @@ export abstract class AbstractNodeAlgorithmState {
       });
   }
 
+  protected getResponseToRequest(request: VoteRequest): VoteResponseBuilder;
+  protected getResponseToRequest(request: LogRequest): LogResponseBuilder;
+  protected getResponseToRequest(
+    request: VoteRequest | LogRequest
+  ): LogResponseBuilder | VoteResponseBuilder {
+    switch (request.type) {
+      case "log-request": {
+        return LogResponseBuilder.aLogResponse().withReceiverNodeId(
+          request.senderNodeId
+        );
+      }
+      case "vote-request": {
+        return VoteResponseBuilder.aVoteResponse().withReceiverNodeId(
+          request.senderNodeId
+        );
+      }
+    }
+  }
+
   protected startTimer(duration: number, label: string): Promise<void> {
     const timerId = this.timerManager.startTimer(duration, this.nodeId, label);
     return new Promise<void>((resolve) => {
